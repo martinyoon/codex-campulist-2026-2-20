@@ -46,6 +46,8 @@ src/
   domain/
   mock/
   server/
+  supabase/
+sql/
 ```
 
 ## Run
@@ -56,6 +58,18 @@ npm run dev
 ```
 
 Open `http://localhost:6001`
+
+## Supabase Prep (already added)
+
+- Env template: `.env.example`
+- SQL draft:
+  - `sql/001_init.sql`
+  - `sql/002_policies.sql`
+- Repository skeleton:
+  - `src/supabase/repositories.ts`
+  - `src/supabase/env.ts`
+
+`/write` page now requires `promotion_until` when `is_promoted` is enabled, so promoted listing behavior is consistent with backend filters.
 
 ## Supabase Migration Path
 

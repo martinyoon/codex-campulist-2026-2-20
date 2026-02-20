@@ -13,6 +13,7 @@ import type {
 import { createMockContext, type MockContext } from "./repositories";
 
 interface ApiErrorPayload {
+  status: number;
   code: string;
   message: string;
 }
@@ -145,14 +146,22 @@ export class MockApi {
         return {
           ok: false,
           status: error.status,
-          error: { code: error.code, message: error.message },
+          error: {
+            status: error.status,
+            code: error.code,
+            message: error.message,
+          },
         };
       }
 
       return {
         ok: false,
         status: 500,
-        error: { code: "INTERNAL_ERROR", message: "Unexpected mock API error." },
+        error: {
+          status: 500,
+          code: "INTERNAL_ERROR",
+          message: "Unexpected mock API error.",
+        },
       };
     }
   }

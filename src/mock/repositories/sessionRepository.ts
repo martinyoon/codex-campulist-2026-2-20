@@ -7,7 +7,9 @@ export class InMemorySessionRepository implements SessionRepository {
   private currentSession: SessionContext;
 
   constructor(private readonly db: MockDatabase) {
-    const defaultUser = db.users.find((user) => user.role === "student");
+    const defaultUser = db.users.find(
+      (user) => user.role === "student" && user.deleted_at === null,
+    );
     if (!defaultUser) {
       throw new AppError("NOT_FOUND", "Seed user for default session is missing.");
     }
@@ -49,7 +51,9 @@ export class InMemorySessionRepository implements SessionRepository {
 
   private pickUser(input: MockLoginInput): User | undefined {
     if (input.user_id) {
-      return this.db.users.find((user) => user.id === input.user_id);
+      return this.db.users.find(
+        (user) => user.id === input.user_id && user.deleted_at === null,
+      );
     }
 
     const targetCampusId = input.campus_id ?? this.currentSession.campus_id;

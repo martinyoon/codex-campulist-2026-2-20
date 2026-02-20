@@ -23,7 +23,7 @@ export class InMemoryReportRepository implements ReportRepository {
 
     const now = nowIso();
     const report: Report = {
-      id: createId("report"),
+      id: createId(),
       campus_id: session.campus_id,
       reporter_id: session.user_id,
       target_type: input.target_type,

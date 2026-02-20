@@ -2,10 +2,27 @@ import type { MockDatabase } from "./database";
 
 const baseTime = "2026-02-20T00:00:00.000Z";
 
+const IDs = {
+  campusKaistMain: "3c8d5c48-f693-4f67-bf54-df73015f9e56",
+  userStudent: "a12d9d7b-6d2e-4921-9d94-b6eb0e6f7fe1",
+  userProfessor: "b7e9a2c1-9f16-4f8d-8a15-3b5c7788b2ef",
+  userStaff: "c4d8f49a-6f8e-4f12-9f1a-0e59a0e2af61",
+  userMerchant: "d3b4c1a8-5f7e-4b9d-8b21-7c1172d8101a",
+  userAdmin: "e95af2d1-1c5f-4da7-92dd-2f7165a84237",
+  postMarket: "0f09af0d-74f8-4f63-b28a-26fb918f1964",
+  postHousing: "1a3d4782-bfd8-4ad0-9508-318cc5e4b6b6",
+  postJobs: "2b7a6281-2c14-4d06-8ad5-8f2a9d3cf71c",
+  postStore: "3cb773f4-1738-4eec-925d-cab4b4d4a881",
+  thread01: "4dd9f4af-c219-4fe7-95b4-607211dcfa22",
+  message01: "59e2c787-7cc7-4ca8-a9dc-3f6bd5f6f0cd",
+  message02: "6a1bf0b4-14f4-4709-8d22-1e85d8f4816c",
+  report01: "7b6e2027-f3bf-45fd-8d23-6da7d703f0ab",
+} as const;
+
 const seed: MockDatabase = {
   campuses: [
     {
-      id: "campus_kaist_main",
+      id: IDs.campusKaistMain,
       slug: "kaist-main",
       name_ko: "카이스트 대전 본원",
       name_en: "KAIST Main Campus (Daejeon)",
@@ -18,8 +35,8 @@ const seed: MockDatabase = {
   ],
   users: [
     {
-      id: "user_student_01",
-      campus_id: "campus_kaist_main",
+      id: IDs.userStudent,
+      campus_id: IDs.campusKaistMain,
       role: "student",
       display_name: "김학생",
       nickname: "student01",
@@ -31,8 +48,8 @@ const seed: MockDatabase = {
       deleted_at: null,
     },
     {
-      id: "user_professor_01",
-      campus_id: "campus_kaist_main",
+      id: IDs.userProfessor,
+      campus_id: IDs.campusKaistMain,
       role: "professor",
       display_name: "이교수",
       nickname: "prof01",
@@ -44,8 +61,8 @@ const seed: MockDatabase = {
       deleted_at: null,
     },
     {
-      id: "user_staff_01",
-      campus_id: "campus_kaist_main",
+      id: IDs.userStaff,
+      campus_id: IDs.campusKaistMain,
       role: "staff",
       display_name: "박직원",
       nickname: "staff01",
@@ -57,8 +74,8 @@ const seed: MockDatabase = {
       deleted_at: null,
     },
     {
-      id: "user_merchant_01",
-      campus_id: "campus_kaist_main",
+      id: IDs.userMerchant,
+      campus_id: IDs.campusKaistMain,
       role: "merchant",
       display_name: "궁동상점",
       nickname: "store01",
@@ -70,8 +87,8 @@ const seed: MockDatabase = {
       deleted_at: null,
     },
     {
-      id: "user_admin_01",
-      campus_id: "campus_kaist_main",
+      id: IDs.userAdmin,
+      campus_id: IDs.campusKaistMain,
       role: "admin",
       display_name: "관리자",
       nickname: "admin",
@@ -85,10 +102,10 @@ const seed: MockDatabase = {
   ],
   posts: [
     {
-      id: "post_market_01",
-      campus_id: "campus_kaist_main",
+      id: IDs.postMarket,
+      campus_id: IDs.campusKaistMain,
       category: "market",
-      author_id: "user_student_01",
+      author_id: IDs.userStudent,
       title: "자료구조 교재 팝니다",
       body: "상태 좋고 필기 거의 없습니다.",
       price_krw: 18000,
@@ -103,10 +120,10 @@ const seed: MockDatabase = {
       deleted_at: null,
     },
     {
-      id: "post_housing_01",
-      campus_id: "campus_kaist_main",
+      id: IDs.postHousing,
+      campus_id: IDs.campusKaistMain,
       category: "housing",
-      author_id: "user_student_01",
+      author_id: IDs.userStudent,
       title: "궁동 원룸 단기양도",
       body: "3월~6월 단기양도, 보증금 협의 가능.",
       price_krw: 350000,
@@ -121,10 +138,10 @@ const seed: MockDatabase = {
       deleted_at: null,
     },
     {
-      id: "post_jobs_01",
-      campus_id: "campus_kaist_main",
+      id: IDs.postJobs,
+      campus_id: IDs.campusKaistMain,
       category: "jobs",
-      author_id: "user_professor_01",
+      author_id: IDs.userProfessor,
       title: "연구실 학부 인턴 모집",
       body: "ML 기초 지식 있는 분 우대, 주 2회 미팅.",
       price_krw: null,
@@ -139,10 +156,10 @@ const seed: MockDatabase = {
       deleted_at: null,
     },
     {
-      id: "post_store_01",
-      campus_id: "campus_kaist_main",
+      id: IDs.postStore,
+      campus_id: IDs.campusKaistMain,
       category: "store",
-      author_id: "user_merchant_01",
+      author_id: IDs.userMerchant,
       title: "학생 전용 점심 할인 쿠폰",
       body: "학생증 제시 시 10% 할인, 평일 점심 한정.",
       price_krw: null,
@@ -159,10 +176,10 @@ const seed: MockDatabase = {
   ],
   chat_threads: [
     {
-      id: "thread_01",
-      campus_id: "campus_kaist_main",
-      post_id: "post_market_01",
-      participant_ids: ["user_student_01", "user_staff_01"],
+      id: IDs.thread01,
+      campus_id: IDs.campusKaistMain,
+      post_id: IDs.postMarket,
+      participant_ids: [IDs.userStudent, IDs.userStaff],
       status: "open",
       last_message_at: "2026-02-18T09:02:00.000Z",
       created_at: "2026-02-18T09:00:00.000Z",
@@ -172,10 +189,10 @@ const seed: MockDatabase = {
   ],
   chat_messages: [
     {
-      id: "msg_01",
-      campus_id: "campus_kaist_main",
-      thread_id: "thread_01",
-      sender_id: "user_staff_01",
+      id: IDs.message01,
+      campus_id: IDs.campusKaistMain,
+      thread_id: IDs.thread01,
+      sender_id: IDs.userStaff,
       body: "아직 구매 가능한가요?",
       is_read: true,
       created_at: "2026-02-18T09:01:00.000Z",
@@ -183,10 +200,10 @@ const seed: MockDatabase = {
       deleted_at: null,
     },
     {
-      id: "msg_02",
-      campus_id: "campus_kaist_main",
-      thread_id: "thread_01",
-      sender_id: "user_student_01",
+      id: IDs.message02,
+      campus_id: IDs.campusKaistMain,
+      thread_id: IDs.thread01,
+      sender_id: IDs.userStudent,
       body: "네, 가능합니다.",
       is_read: true,
       created_at: "2026-02-18T09:02:00.000Z",
@@ -196,11 +213,11 @@ const seed: MockDatabase = {
   ],
   reports: [
     {
-      id: "report_01",
-      campus_id: "campus_kaist_main",
-      reporter_id: "user_student_01",
+      id: IDs.report01,
+      campus_id: IDs.campusKaistMain,
+      reporter_id: IDs.userStudent,
       target_type: "post",
-      target_id: "post_store_01",
+      target_id: IDs.postStore,
       reason: "spam",
       details: "같은 내용이 반복 게시됩니다.",
       status: "pending",

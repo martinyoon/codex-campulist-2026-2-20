@@ -79,8 +79,31 @@ export class InMemoryPostRepository implements PostRepository {
     ensure(canCreateInCategory(session, input.category), "FORBIDDEN", "Category is not allowed for this role.");
 
     const now = nowIso();
+    const isPromoted = input.is_promoted ?? false;
+
+    let promotionUntil: string | null = null;
+    if (isPromoted) {
+      ensure(
+        typeof input.promotion_until === "string" && input.promotion_until.length > 0,
+        "BAD_REQUEST",
+        "promotion_until is required when is_promoted is true.",
+      );
+      const promotionTime = new Date(input.promotion_until).getTime();
+      ensure(
+        !Number.isNaN(promotionTime),
+        "BAD_REQUEST",
+        "promotion_until must be a valid ISO datetime.",
+      );
+      ensure(
+        promotionTime > Date.now(),
+        "BAD_REQUEST",
+        "promotion_until must be a future datetime.",
+      );
+      promotionUntil = new Date(promotionTime).toISOString();
+    }
+
     const post: Post = {
-      id: createId("post"),
+      id: createId(),
       campus_id: isAdmin(session) ? input.campus_id ?? session.campus_id : session.campus_id,
       category: input.category,
       author_id: session.user_id,
@@ -90,8 +113,8 @@ export class InMemoryPostRepository implements PostRepository {
       tags: input.tags?.map((tag) => tag.trim()).filter(Boolean) ?? [],
       location_hint: input.location_hint?.trim() ?? null,
       status: "active",
-      is_promoted: input.is_promoted ?? false,
-      promotion_until: null,
+      is_promoted: isPromoted,
+      promotion_until: promotionUntil,
       view_count: 0,
       created_at: now,
       updated_at: now,
@@ -169,8 +192,20 @@ export class InMemoryPostRepository implements PostRepository {
     ensure(post.status !== "hidden", "BAD_REQUEST", "Hidden posts cannot be promoted.");
     ensure(post.deleted_at === null, "BAD_REQUEST", "Deleted posts cannot be promoted.");
 
+    const promotionTime = new Date(promotionUntil).getTime();
+    ensure(
+      !Number.isNaN(promotionTime),
+      "BAD_REQUEST",
+      "promotion_until must be a valid ISO datetime.",
+    );
+    ensure(
+      promotionTime > Date.now(),
+      "BAD_REQUEST",
+      "promotion_until must be a future datetime.",
+    );
+
     post.is_promoted = true;
-    post.promotion_until = promotionUntil;
+    post.promotion_until = new Date(promotionTime).toISOString();
     post.updated_at = nowIso();
     return post;
   }

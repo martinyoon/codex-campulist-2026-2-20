@@ -35,7 +35,6 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           role,
-          campus_id: "campus_kaist_main",
         }),
       });
       const result = (await response.json()) as LoginResult;

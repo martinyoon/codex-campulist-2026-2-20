@@ -113,6 +113,7 @@ export interface CreatePostInput {
   tags?: string[];
   location_hint?: string | null;
   is_promoted?: boolean;
+  promotion_until?: string | null;
 }
 
 export interface UpdatePostInput {

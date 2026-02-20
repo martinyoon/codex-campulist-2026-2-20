@@ -7,3 +7,5 @@ export * from "./mock/api";
 export * from "./mock/database";
 export * from "./mock/repositories";
 export * from "./mock/seed";
+export * from "./mock/utils";
+export * from "./supabase";

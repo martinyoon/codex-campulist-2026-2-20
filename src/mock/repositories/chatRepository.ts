@@ -65,7 +65,7 @@ export class InMemoryChatRepository implements ChatRepository {
 
     const now = nowIso();
     const thread: ChatThread = {
-      id: createId("thread"),
+      id: createId(),
       campus_id: post.campus_id,
       post_id: post.id,
       participant_ids: [post.author_id, session.user_id],
@@ -104,7 +104,7 @@ export class InMemoryChatRepository implements ChatRepository {
 
     const now = nowIso();
     const message: ChatMessage = {
-      id: createId("msg"),
+      id: createId(),
       campus_id: thread.campus_id,
       thread_id: thread.id,
       sender_id: session.user_id,

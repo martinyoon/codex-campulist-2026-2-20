@@ -18,6 +18,7 @@ export default function WritePage() {
   const router = useRouter();
   const [isSubmitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [isPromoted, setIsPromoted] = useState(false);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -27,6 +28,24 @@ export default function WritePage() {
     const formData = new FormData(event.currentTarget);
     const priceRaw = String(formData.get("price_krw") ?? "").trim();
     const tagsRaw = String(formData.get("tags") ?? "").trim();
+    const promotionUntilRaw = String(formData.get("promotion_until") ?? "").trim();
+    const isPromotedChecked = formData.get("is_promoted") === "on";
+
+    let promotionUntil: string | null = null;
+    if (isPromotedChecked) {
+      if (!promotionUntilRaw) {
+        setMessage("상단노출을 선택한 경우 노출 종료 시간을 입력해야 합니다.");
+        setSubmitting(false);
+        return;
+      }
+      const parsedTime = new Date(promotionUntilRaw).getTime();
+      if (Number.isNaN(parsedTime)) {
+        setMessage("상단노출 종료 시간 형식이 올바르지 않습니다.");
+        setSubmitting(false);
+        return;
+      }
+      promotionUntil = new Date(parsedTime).toISOString();
+    }
 
     const payload = {
       category: String(formData.get("category")),
@@ -40,7 +59,8 @@ export default function WritePage() {
             .map((item) => item.trim())
             .filter(Boolean)
         : [],
-      is_promoted: formData.get("is_promoted") === "on",
+      is_promoted: isPromotedChecked,
+      promotion_until: promotionUntil,
     };
 
     try {
@@ -142,10 +162,27 @@ export default function WritePage() {
           </label>
         </div>
 
-        <label>
-          <input type="checkbox" name="is_promoted" /> 상단노출 옵션 테스트
-          (결제 제외)
-        </label>
+        <div className="row-2">
+          <label>
+            <input
+              type="checkbox"
+              name="is_promoted"
+              checked={isPromoted}
+              onChange={(event) => setIsPromoted(event.target.checked)}
+            />{" "}
+            상단노출 옵션 테스트 (결제 제외)
+          </label>
+          <label>
+            <div className="note">상단노출 종료 시각</div>
+            <input
+              type="datetime-local"
+              name="promotion_until"
+              className="input"
+              disabled={!isPromoted}
+              required={isPromoted}
+            />
+          </label>
+        </div>
 
         <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
           {isSubmitting ? "작성 중..." : "게시글 등록"}

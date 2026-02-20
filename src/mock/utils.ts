@@ -1,10 +1,10 @@
+import { randomUUID } from "node:crypto";
 import { AppError } from "../domain/errors";
 import type { ListResult } from "../domain/types";
 
 export const nowIso = (): string => new Date().toISOString();
 
-export const createId = (prefix: string): string =>
-  `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+export const createId = (): string => randomUUID();
 
 export const normalizeText = (value: string): string =>
   value.toLowerCase().trim();

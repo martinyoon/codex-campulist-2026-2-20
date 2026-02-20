@@ -1,14 +1,24 @@
 import { NextRequest } from "next/server";
 import { mockApi } from "@/src/server/mockApiSingleton";
-import { toNextResponse } from "@/src/server/apiResponse";
+import { toErrorResponse, toNextResponse } from "@/src/server/apiResponse";
+import {
+  parseJsonObjectBody,
+  parsePromotionUntil,
+  parseUuidParam,
+} from "@/src/server/validation";
 
 interface RouteContext {
   params: { id: string };
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
-  const payload = await request.json();
-  const promotionUntil = String(payload?.promotion_until ?? "");
-  const result = await mockApi.promotePost(context.params.id, promotionUntil);
-  return toNextResponse(result);
+  try {
+    const postId = parseUuidParam(context.params.id, "post_id");
+    const body = await parseJsonObjectBody(request);
+    const promotionUntil = parsePromotionUntil(body);
+    const result = await mockApi.promotePost(postId, promotionUntil);
+    return toNextResponse(result);
+  } catch (error) {
+    return toErrorResponse(error);
+  }
 }
