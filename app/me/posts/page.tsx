@@ -4,6 +4,9 @@ import type { PostStatus } from "@/src/domain/enums";
 import { mockApi } from "@/src/server/mockApiSingleton";
 import { parsePaginationParams, parseSearchKeyword } from "@/src/server/params";
 import { MyPostActions } from "./postActions";
+import { EmptyState, ErrorState } from "@/app/stateBlocks";
+import { getPostStatusLabel } from "@/src/ui/labelMap";
+import { StatusBadge } from "@/app/components/statusBadge";
 
 interface PageProps {
   searchParams: {
@@ -53,11 +56,44 @@ export default async function MyPostsPage({ searchParams }: PageProps) {
     }),
   ]);
 
-  const currentUserId = sessionResult.ok ? sessionResult.data.user_id : "";
-  const allMyPosts =
-    listResult.ok && currentUserId
-      ? listResult.data.items.filter((post) => post.author_id === currentUserId)
-      : [];
+  if (!sessionResult.ok) {
+    return (
+      <>
+        <section className="hero">
+          <h1>내 게시글 관리</h1>
+          <p>게시글 상태 변경 및 삭제(소프트 삭제)를 수행할 수 있습니다.</p>
+        </section>
+        <ErrorState
+          title="세션 정보를 확인할 수 없습니다."
+          description={sessionResult.error.message}
+          action_href="/login"
+          action_label="역할 전환하기"
+        />
+      </>
+    );
+  }
+
+  if (!listResult.ok) {
+    return (
+      <>
+        <section className="hero">
+          <h1>내 게시글 관리</h1>
+          <p>게시글 상태 변경 및 삭제(소프트 삭제)를 수행할 수 있습니다.</p>
+        </section>
+        <ErrorState
+          title="내 게시글 목록을 불러오지 못했습니다."
+          description={listResult.error.message}
+          action_href="/me/posts"
+          action_label="다시 시도"
+        />
+      </>
+    );
+  }
+
+  const currentUserId = sessionResult.data.user_id;
+  const allMyPosts = listResult.data.items.filter(
+    (post) => post.author_id === currentUserId,
+  );
   const total = allMyPosts.length;
   const posts = allMyPosts.slice(offset, offset + limit);
   const hasMore = offset + limit < total;
@@ -87,7 +123,7 @@ export default async function MyPostsPage({ searchParams }: PageProps) {
           <option value="">전체 상태</option>
           {POST_STATUSES.map((item) => (
             <option key={item} value={item}>
-              {item}
+              {getPostStatusLabel(item)}
             </option>
           ))}
         </select>
@@ -106,6 +142,9 @@ export default async function MyPostsPage({ searchParams }: PageProps) {
             적용
           </button>
         </div>
+        <Link className="btn" href="/me/posts">
+          초기화
+        </Link>
         <input type="hidden" name="page" value="1" />
       </form>
 
@@ -117,7 +156,7 @@ export default async function MyPostsPage({ searchParams }: PageProps) {
             </h4>
             <p className="muted">{post.body.slice(0, 140)}</p>
             <div className="post-meta">
-              <span className="chip">{post.status}</span>
+              <StatusBadge kind="post" value={post.status} />
               <span>{new Date(post.created_at).toLocaleString("ko-KR")}</span>
               {post.price_krw !== null ? <span>{post.price_krw.toLocaleString()}원</span> : null}
             </div>
@@ -126,9 +165,12 @@ export default async function MyPostsPage({ searchParams }: PageProps) {
         ))}
 
         {posts.length === 0 ? (
-          <article className="post-item">
-            <p className="muted">작성한 게시글이 없습니다.</p>
-          </article>
+          <EmptyState
+            title="작성한 게시글이 없습니다."
+            description="첫 글을 작성하고 거래/모집/홍보를 시작해 보세요."
+            action_href="/write"
+            action_label="글 작성하기"
+          />
         ) : null}
       </section>
 

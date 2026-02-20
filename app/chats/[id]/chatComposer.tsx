@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/app/components/toastProvider";
 
 interface ApiResponse<T> {
   ok: boolean;
@@ -16,6 +17,7 @@ interface ApiResponse<T> {
 
 export function ChatComposer({ threadId }: { threadId: string }) {
   const router = useRouter();
+  const { pushToast } = useToast();
   const [value, setValue] = useState("");
   const [isSending, setSending] = useState(false);
   const [message, setMessage] = useState("");
@@ -23,7 +25,9 @@ export function ChatComposer({ threadId }: { threadId: string }) {
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!value.trim()) {
-      setMessage("메시지를 입력하세요.");
+      const errorMessage = "메시지를 입력하세요.";
+      setMessage(errorMessage);
+      pushToast({ kind: "error", message: errorMessage });
       return;
     }
 
@@ -37,13 +41,17 @@ export function ChatComposer({ threadId }: { threadId: string }) {
       });
       const result = (await response.json()) as ApiResponse<{ id: string }>;
       if (!result.ok) {
-        setMessage(result.error?.message ?? "메시지 전송 실패");
+        const errorMessage = result.error?.message ?? "메시지 전송 실패";
+        setMessage(errorMessage);
+        pushToast({ kind: "error", message: errorMessage });
         return;
       }
       setValue("");
+      pushToast({ kind: "success", message: "메시지를 전송했습니다." });
       router.refresh();
     } catch {
       setMessage("요청 처리 중 오류가 발생했습니다.");
+      pushToast({ kind: "error", message: "요청 처리 중 오류가 발생했습니다." });
     } finally {
       setSending(false);
     }

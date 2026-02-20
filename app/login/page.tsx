@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { USER_ROLES } from "@/src/domain/enums";
+import { useToast } from "@/app/components/toastProvider";
+import { getUserRoleLabel } from "@/src/ui/labelMap";
 
 interface LoginResult {
   ok: boolean;
   status: number;
   data?: {
     user_id: string;
-    role: string;
+    role: (typeof USER_ROLES)[number];
     campus_id: string;
   };
   error?: {
@@ -20,6 +22,7 @@ interface LoginResult {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { pushToast } = useToast();
   const [role, setRole] = useState<(typeof USER_ROLES)[number]>("student");
   const [isSubmitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string>("");
@@ -40,15 +43,20 @@ export default function LoginPage() {
       const result = (await response.json()) as LoginResult;
 
       if (!result.ok || !result.data) {
-        setMessage(result.error?.message ?? "로그인 실패");
+        const errorMessage = result.error?.message ?? "로그인 실패";
+        setMessage(errorMessage);
+        pushToast({ kind: "error", message: errorMessage });
         return;
       }
 
-      setMessage(`세션 변경 완료: ${result.data.role}`);
+      const successMessage = `세션 변경 완료: ${getUserRoleLabel(result.data.role)}`;
+      setMessage(successMessage);
+      pushToast({ kind: "success", message: successMessage });
       router.push("/");
       router.refresh();
     } catch {
       setMessage("요청 처리 중 오류가 발생했습니다.");
+      pushToast({ kind: "error", message: "요청 처리 중 오류가 발생했습니다." });
     } finally {
       setSubmitting(false);
     }
@@ -72,7 +80,7 @@ export default function LoginPage() {
           >
             {USER_ROLES.map((item) => (
               <option value={item} key={item}>
-                {item}
+                {getUserRoleLabel(item)}
               </option>
             ))}
           </select>

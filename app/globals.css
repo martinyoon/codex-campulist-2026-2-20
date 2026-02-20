@@ -6,6 +6,7 @@
   --panel: #111a18;
   --panel-soft: rgba(17, 26, 24, 0.88);
   --panel-strong: #0d1513;
+  --nav-active-bg: rgba(28, 168, 133, 0.18);
   --hero-bg-a: rgba(20, 30, 27, 0.95);
   --hero-bg-b: rgba(13, 21, 19, 0.92);
   --ink: #e8f3ef;
@@ -15,6 +16,28 @@
   --line: #29423a;
   --danger: #ff8d84;
   --danger-line: #6e3430;
+  --danger-soft: rgba(110, 52, 48, 0.22);
+  --status-success-bg: #13382f;
+  --status-success-line: #2a7461;
+  --status-success-ink: #95f0d4;
+  --status-warning-bg: #3a2b10;
+  --status-warning-line: #866222;
+  --status-warning-ink: #ffd98f;
+  --status-danger-bg: #391815;
+  --status-danger-line: #6e3430;
+  --status-danger-ink: #ffb6af;
+  --status-neutral-bg: #1a2320;
+  --status-neutral-line: #3a4b45;
+  --status-neutral-ink: #c3d7d0;
+  --toast-info-bg: #16354a;
+  --toast-info-line: #3a789a;
+  --toast-info-ink: #cce9ff;
+  --toast-success-bg: #13382f;
+  --toast-success-line: #2a7461;
+  --toast-success-ink: #95f0d4;
+  --toast-error-bg: #391815;
+  --toast-error-line: #6e3430;
+  --toast-error-ink: #ffb6af;
   --hover: #1a2723;
   --input-bg: #101816;
   --chip-accent-ink: #95f0d4;
@@ -30,6 +53,7 @@
   --panel: #ffffff;
   --panel-soft: rgba(255, 255, 255, 0.86);
   --panel-strong: #f6fbf9;
+  --nav-active-bg: rgba(11, 122, 97, 0.12);
   --hero-bg-a: rgba(255, 255, 255, 0.94);
   --hero-bg-b: rgba(245, 252, 249, 0.92);
   --ink: #1a2b25;
@@ -39,6 +63,28 @@
   --line: #d4e1dc;
   --danger: #b2362f;
   --danger-line: #eab8b5;
+  --danger-soft: rgba(234, 184, 181, 0.45);
+  --status-success-bg: #e9faf4;
+  --status-success-line: #abdccf;
+  --status-success-ink: #054233;
+  --status-warning-bg: #fff4de;
+  --status-warning-line: #efd4a0;
+  --status-warning-ink: #5d4300;
+  --status-danger-bg: #ffefee;
+  --status-danger-line: #eab8b5;
+  --status-danger-ink: #7f2d27;
+  --status-neutral-bg: #f1f5f3;
+  --status-neutral-line: #d4e1dc;
+  --status-neutral-ink: #41524c;
+  --toast-info-bg: #ebf6ff;
+  --toast-info-line: #b7d8ee;
+  --toast-info-ink: #21465f;
+  --toast-success-bg: #e9faf4;
+  --toast-success-line: #abdccf;
+  --toast-success-ink: #054233;
+  --toast-error-bg: #ffefee;
+  --toast-error-line: #eab8b5;
+  --toast-error-ink: #7f2d27;
   --hover: #f9fcfa;
   --input-bg: #ffffff;
   --chip-accent-ink: #054233;
@@ -106,16 +152,24 @@ a {
   flex-wrap: wrap;
 }
 
-.nav a {
+.nav-link {
+  display: inline-flex;
+  align-items: center;
   padding: 8px 10px;
   border-radius: 10px;
   font-size: 14px;
   border: 1px solid transparent;
 }
 
-.nav a:hover {
+.nav-link:hover {
   border-color: var(--line);
   background: var(--hover);
+}
+
+.nav-link.is-active {
+  border-color: var(--accent);
+  background: var(--nav-active-bg);
+  color: var(--ink);
 }
 
 .session-badge {
@@ -228,6 +282,34 @@ a {
   background: var(--chip-accent-bg);
 }
 
+.status-badge {
+  font-weight: 600;
+}
+
+.status-success {
+  color: var(--status-success-ink);
+  border-color: var(--status-success-line);
+  background: var(--status-success-bg);
+}
+
+.status-warning {
+  color: var(--status-warning-ink);
+  border-color: var(--status-warning-line);
+  background: var(--status-warning-bg);
+}
+
+.status-danger {
+  color: var(--status-danger-ink);
+  border-color: var(--status-danger-line);
+  background: var(--status-danger-bg);
+}
+
+.status-neutral {
+  color: var(--status-neutral-ink);
+  border-color: var(--status-neutral-line);
+  background: var(--status-neutral-bg);
+}
+
 .muted {
   color: var(--muted);
 }
@@ -331,6 +413,152 @@ a {
   margin-top: 8px;
   font-size: 13px;
   color: var(--muted);
+}
+
+.state-card {
+  margin-top: 16px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  padding: 20px;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+}
+
+.state-card-danger {
+  border-style: solid;
+  border-color: var(--danger-line);
+  background:
+    linear-gradient(160deg, var(--panel) 0%, var(--danger-soft) 150%),
+    var(--panel);
+}
+
+.state-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.state-description {
+  margin: 0;
+  color: var(--muted);
+}
+
+.state-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.state-loading-bar {
+  width: min(320px, 80%);
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+  position: relative;
+  margin-top: 4px;
+}
+
+.state-loading-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: state-loading 1.2s linear infinite;
+}
+
+@keyframes state-loading {
+  from {
+    left: -40%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+.toast-stack {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  gap: 8px;
+  z-index: 1200;
+  width: min(360px, calc(100vw - 32px));
+}
+
+.toast-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.toast-info {
+  color: var(--toast-info-ink);
+  border-color: var(--toast-info-line);
+  background: var(--toast-info-bg);
+}
+
+.toast-success {
+  color: var(--toast-success-ink);
+  border-color: var(--toast-success-line);
+  background: var(--toast-success-bg);
+}
+
+.toast-error {
+  color: var(--toast-error-ink);
+  border-color: var(--toast-error-line);
+  background: var(--toast-error-bg);
+}
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(5, 9, 8, 0.58);
+  backdrop-filter: blur(2px);
+}
+
+.confirm-card {
+  width: min(460px, 92vw);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.confirm-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.confirm-description {
+  margin: 0;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
 @media (max-width: 900px) {

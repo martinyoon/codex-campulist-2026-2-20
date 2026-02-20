@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/app/components/toastProvider";
 
 interface ApiResponse<T> {
   ok: boolean;
@@ -15,6 +16,7 @@ interface ApiResponse<T> {
 
 export function PostActions({ postId }: { postId: string }) {
   const router = useRouter();
+  const { pushToast } = useToast();
   const [chatMessage, setChatMessage] = useState<string>("");
   const [reportMessage, setReportMessage] = useState<string>("");
   const [busy, setBusy] = useState<"chat" | "report" | null>(null);
@@ -30,13 +32,17 @@ export function PostActions({ postId }: { postId: string }) {
       });
       const result = (await response.json()) as ApiResponse<{ id: string }>;
       if (!result.ok || !result.data) {
-        setChatMessage(result.error?.message ?? "채팅 시작 실패");
+        const errorMessage = result.error?.message ?? "채팅 시작 실패";
+        setChatMessage(errorMessage);
+        pushToast({ kind: "error", message: errorMessage });
         return;
       }
+      pushToast({ kind: "success", message: "채팅방으로 이동합니다." });
       router.push(`/chats/${result.data.id}`);
       router.refresh();
     } catch {
       setChatMessage("요청 중 오류가 발생했습니다.");
+      pushToast({ kind: "error", message: "요청 중 오류가 발생했습니다." });
     } finally {
       setBusy(null);
     }
@@ -58,12 +64,17 @@ export function PostActions({ postId }: { postId: string }) {
       });
       const result = (await response.json()) as ApiResponse<{ id: string }>;
       if (!result.ok || !result.data) {
-        setReportMessage(result.error?.message ?? "신고 실패");
+        const errorMessage = result.error?.message ?? "신고 실패";
+        setReportMessage(errorMessage);
+        pushToast({ kind: "error", message: errorMessage });
         return;
       }
-      setReportMessage(`신고 접수 완료: ${result.data.id}`);
+      const successMessage = `신고 접수 완료: ${result.data.id.slice(0, 8)}`;
+      setReportMessage(successMessage);
+      pushToast({ kind: "success", message: successMessage });
     } catch {
       setReportMessage("요청 중 오류가 발생했습니다.");
+      pushToast({ kind: "error", message: "요청 중 오류가 발생했습니다." });
     } finally {
       setBusy(null);
     }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { mockApi } from "@/src/server/mockApiSingleton";
+import { getPostCategoryLabel } from "@/src/ui/labelMap";
 
 const categories = [
   { slug: "market", title: "중고거래", desc: "교재, 전자기기, 생활용품 거래" },
@@ -80,7 +81,7 @@ export default async function HomePage() {
             </h4>
             <p className="muted">{post.body.slice(0, 100)}</p>
             <div className="post-meta">
-              <span className="chip">{post.category}</span>
+              <span className="chip">{getPostCategoryLabel(post.category)}</span>
               <span>{new Date(post.created_at).toLocaleString("ko-KR")}</span>
               <span>조회 {post.view_count}</span>
             </div>

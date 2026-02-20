@@ -4,6 +4,13 @@ import type { ReportStatus } from "@/src/domain/enums";
 import { mockApi } from "@/src/server/mockApiSingleton";
 import { parsePaginationParams } from "@/src/server/params";
 import { ReportActions } from "./reportActions";
+import { EmptyState, ErrorState } from "@/app/stateBlocks";
+import {
+  getReportReasonLabel,
+  getReportStatusLabel,
+  getUserRoleLabel,
+} from "@/src/ui/labelMap";
+import { StatusBadge } from "@/app/components/statusBadge";
 
 interface PageProps {
   searchParams: {
@@ -15,7 +22,8 @@ interface PageProps {
 
 export default async function AdminReportsPage({ searchParams }: PageProps) {
   const sessionResult = await mockApi.getSession();
-  const role = sessionResult.ok ? sessionResult.data.role : "guest";
+  const role = sessionResult.ok ? sessionResult.data.role : null;
+  const roleLabel = role ? getUserRoleLabel(role) : "게스트";
 
   if (role !== "admin") {
     return (
@@ -23,19 +31,15 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
         <section className="hero">
           <h1>신고 관리</h1>
           <p>
-            관리자 전용 페이지입니다. 현재 역할: <strong>{role}</strong>
+            관리자 전용 페이지입니다. 현재 역할: <strong>{roleLabel}</strong>
           </p>
         </section>
-        <section className="card" style={{ marginTop: 16 }}>
-          <p className="muted">
-            접근 권한이 없습니다. 관리자 역할로 전환한 뒤 다시 시도하세요.
-          </p>
-          <div style={{ marginTop: 10 }}>
-            <Link href="/login" className="btn btn-primary">
-              역할 전환하기
-            </Link>
-          </div>
-        </section>
+        <ErrorState
+          title="접근 권한이 없습니다."
+          description="관리자 역할로 전환한 뒤 다시 시도하세요."
+          action_href="/login"
+          action_label="역할 전환하기"
+        />
       </>
     );
   }
@@ -72,7 +76,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
       <section className="hero">
         <h1>신고 관리</h1>
         <p>
-          관리자 신고 처리 화면입니다. 현재 역할: <strong>{role}</strong>
+          관리자 신고 처리 화면입니다. 현재 역할: <strong>{roleLabel}</strong>
         </p>
       </section>
 
@@ -88,7 +92,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
               <option value="">전체 상태</option>
               {REPORT_STATUSES.map((item) => (
                 <option value={item} key={item}>
-                  {item}
+                  {getReportStatusLabel(item)}
                 </option>
               ))}
             </select>
@@ -116,10 +120,10 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
               <article key={report.id} className="post-item">
                 <h4>신고 #{report.id.slice(0, 8)}</h4>
                 <p className="muted" style={{ marginTop: 6 }}>
-                  사유: {report.reason} · {report.details}
+                  사유: {getReportReasonLabel(report.reason)} · {report.details}
                 </p>
                 <div className="post-meta">
-                  <span className="chip">{report.status}</span>
+                  <StatusBadge kind="report" value={report.status} />
                   <span>대상 게시글 {report.target_id.slice(0, 8)}</span>
                   <span>신고자 {report.reporter_id.slice(0, 8)}</span>
                   <span>{new Date(report.created_at).toLocaleString("ko-KR")}</span>
@@ -138,9 +142,10 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
               </article>
             ))}
             {reports.length === 0 ? (
-              <article className="post-item">
-                <p className="muted">표시할 신고가 없습니다.</p>
-              </article>
+              <EmptyState
+                title="표시할 신고가 없습니다."
+                description="신규 신고가 접수되면 이 화면에 표시됩니다."
+              />
             ) : null}
           </section>
 
@@ -177,16 +182,15 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
           </div>
         </>
       ) : (
-        <section className="card" style={{ marginTop: 16 }}>
-          <p className="muted">
-            신고 목록을 불러올 수 없습니다. 관리자 계정으로 역할을 변경한 뒤 다시 시도하세요.
-          </p>
-          <div style={{ marginTop: 10 }}>
-            <Link href="/login" className="btn btn-primary">
-              역할 전환하기
-            </Link>
-          </div>
-        </section>
+        <ErrorState
+          title="신고 목록을 불러올 수 없습니다."
+          description={
+            reportsResult.error.message ??
+            "관리자 계정으로 역할을 변경한 뒤 다시 시도하세요."
+          }
+          action_href="/admin/reports"
+          action_label="다시 시도"
+        />
       )}
     </>
   );

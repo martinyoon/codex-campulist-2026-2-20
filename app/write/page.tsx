@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { POST_CATEGORIES } from "@/src/domain/enums";
+import { useToast } from "@/app/components/toastProvider";
+import { getPostCategoryLabel } from "@/src/ui/labelMap";
 
 interface CreatePostResponse {
   ok: boolean;
@@ -16,6 +18,7 @@ interface CreatePostResponse {
 
 export default function WritePage() {
   const router = useRouter();
+  const { pushToast } = useToast();
   const [isSubmitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [isPromoted, setIsPromoted] = useState(false);
@@ -34,13 +37,17 @@ export default function WritePage() {
     let promotionUntil: string | null = null;
     if (isPromotedChecked) {
       if (!promotionUntilRaw) {
-        setMessage("상단노출을 선택한 경우 노출 종료 시간을 입력해야 합니다.");
+        const errorMessage = "상단노출을 선택한 경우 노출 종료 시간을 입력해야 합니다.";
+        setMessage(errorMessage);
+        pushToast({ kind: "error", message: errorMessage });
         setSubmitting(false);
         return;
       }
       const parsedTime = new Date(promotionUntilRaw).getTime();
       if (Number.isNaN(parsedTime)) {
-        setMessage("상단노출 종료 시간 형식이 올바르지 않습니다.");
+        const errorMessage = "상단노출 종료 시간 형식이 올바르지 않습니다.";
+        setMessage(errorMessage);
+        pushToast({ kind: "error", message: errorMessage });
         setSubmitting(false);
         return;
       }
@@ -71,13 +78,17 @@ export default function WritePage() {
       });
       const result = (await response.json()) as CreatePostResponse;
       if (!result.ok || !result.data) {
-        setMessage(result.error?.message ?? "작성 실패");
+        const errorMessage = result.error?.message ?? "작성 실패";
+        setMessage(errorMessage);
+        pushToast({ kind: "error", message: errorMessage });
         return;
       }
+      pushToast({ kind: "success", message: "게시글을 등록했습니다." });
       router.push(`/posts/${result.data.id}`);
       router.refresh();
     } catch {
       setMessage("요청 처리 중 오류가 발생했습니다.");
+      pushToast({ kind: "error", message: "요청 처리 중 오류가 발생했습니다." });
     } finally {
       setSubmitting(false);
     }
@@ -100,7 +111,7 @@ export default function WritePage() {
             <select name="category" className="select" defaultValue="market">
               {POST_CATEGORIES.map((category) => (
                 <option key={category} value={category}>
-                  {category}
+                  {getPostCategoryLabel(category)}
                 </option>
               ))}
             </select>

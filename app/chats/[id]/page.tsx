@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { mockApi } from "@/src/server/mockApiSingleton";
 import { ChatComposer } from "./chatComposer";
 import { ChatRefreshControls } from "./chatRefreshControls";
+import { EmptyState } from "@/app/stateBlocks";
 
 interface PageProps {
   params: { id: string };
@@ -46,9 +47,10 @@ export default async function ChatThreadPage({ params }: PageProps) {
           </article>
         ))}
         {messages.length === 0 ? (
-          <article className="post-item">
-            <p className="muted">아직 메시지가 없습니다.</p>
-          </article>
+          <EmptyState
+            title="아직 메시지가 없습니다."
+            description="첫 메시지를 보내 대화를 시작해 보세요."
+          />
         ) : null}
       </section>
 

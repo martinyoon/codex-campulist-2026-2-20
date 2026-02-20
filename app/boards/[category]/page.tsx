@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { POST_CATEGORIES, POST_SORT_OPTIONS } from "@/src/domain/enums";
 import type { PostSortOption } from "@/src/domain/enums";
 import { mockApi } from "@/src/server/mockApiSingleton";
+import { EmptyState, ErrorState } from "@/app/stateBlocks";
+import { StatusBadge } from "@/app/components/statusBadge";
 
 const categoryTitle: Record<string, string> = {
   market: "중고거래",
@@ -41,10 +43,55 @@ export default async function BoardPage({ params, searchParams }: PageProps) {
     limit,
     offset,
   });
+  if (!result.ok) {
+    return (
+      <>
+        <section className="hero">
+          <h1>{categoryTitle[params.category]}</h1>
+          <p>
+            검색/정렬 기반 목록 검증 페이지입니다. Supabase 전환 시 동일 쿼리
+            구조를 유지할 수 있도록 설계했습니다.
+          </p>
+        </section>
 
-  const list = result.ok ? result.data.items : [];
-  const total = result.ok ? result.data.total : 0;
-  const hasMore = result.ok ? result.data.has_more : false;
+        <form className="toolbar" method="GET">
+          <input
+            type="text"
+            name="q"
+            defaultValue={searchParams.q ?? ""}
+            className="input"
+            placeholder="키워드 검색"
+          />
+          <select name="sort" defaultValue={sort} className="select">
+            <option value="newest">최신순</option>
+            <option value="oldest">오래된순</option>
+            <option value="price_asc">가격 낮은순</option>
+            <option value="price_desc">가격 높은순</option>
+            <option value="popular">조회순</option>
+          </select>
+          <div className="row-2" style={{ maxWidth: 280 }}>
+            <button className="btn" type="submit">
+              적용
+            </button>
+            <Link className="btn" href={`/boards/${params.category}`}>
+              초기화
+            </Link>
+          </div>
+        </form>
+
+        <ErrorState
+          title="게시글 목록을 불러오지 못했습니다."
+          description={result.error.message}
+          action_href={`/boards/${params.category}`}
+          action_label="다시 시도"
+        />
+      </>
+    );
+  }
+
+  const list = result.data.items;
+  const total = result.data.total;
+  const hasMore = result.data.has_more;
 
   return (
     <>
@@ -71,9 +118,14 @@ export default async function BoardPage({ params, searchParams }: PageProps) {
           <option value="price_desc">가격 높은순</option>
           <option value="popular">조회순</option>
         </select>
-        <button className="btn" type="submit">
-          적용
-        </button>
+        <div className="row-2" style={{ maxWidth: 280 }}>
+          <button className="btn" type="submit">
+            적용
+          </button>
+          <Link className="btn" href={`/boards/${params.category}`}>
+            초기화
+          </Link>
+        </div>
       </form>
 
       <section className="grid">
@@ -84,7 +136,7 @@ export default async function BoardPage({ params, searchParams }: PageProps) {
             </h4>
             <p className="muted">{post.body.slice(0, 140)}</p>
             <div className="post-meta">
-              <span className="chip">{post.status}</span>
+              <StatusBadge kind="post" value={post.status} />
               {post.is_promoted ? <span className="chip chip-accent">상단노출</span> : null}
               <span>{new Date(post.created_at).toLocaleString("ko-KR")}</span>
               {post.price_krw !== null ? <span>{post.price_krw.toLocaleString()}원</span> : null}
@@ -93,9 +145,12 @@ export default async function BoardPage({ params, searchParams }: PageProps) {
           </article>
         ))}
         {list.length === 0 ? (
-          <article className="post-item">
-            <p className="muted">조건에 맞는 게시글이 없습니다.</p>
-          </article>
+          <EmptyState
+            title="조건에 맞는 게시글이 없습니다."
+            description="검색어를 바꾸거나 정렬 조건을 초기화해 보세요."
+            action_href={`/boards/${params.category}`}
+            action_label="조건 초기화"
+          />
         ) : null}
       </section>
 
