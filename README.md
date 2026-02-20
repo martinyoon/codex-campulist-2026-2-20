@@ -99,3 +99,11 @@ Post visibility policy (non-admin):
 2. Implement Supabase repositories matching the same interfaces.
 3. Replace repository binding in one place (`src/server/mockApiSingleton.ts` equivalent composition root).
 4. Keep pages and API route shapes unchanged.
+
+## Query Params (shared parser)
+
+- `src/server/params.ts` now provides shared parsing for:
+  - pagination (`page`, `limit`, `offset`)
+  - boolean flags (`promoted_only`, `include_hidden`)
+  - search alias (`search` or `q`)
+- API routes use these helpers so query contracts stay stable when replacing mock repository with Supabase repository.

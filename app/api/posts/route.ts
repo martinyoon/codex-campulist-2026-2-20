@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import { mockApi } from "@/src/server/mockApiSingleton";
-import { parsePositiveInt } from "@/src/server/params";
+import {
+  parseBooleanFlag,
+  parsePaginationParams,
+  parseSearchKeyword,
+} from "@/src/server/params";
 import { toErrorResponse, toNextResponse } from "@/src/server/apiResponse";
 import {
   parseCreatePostInput,
@@ -13,15 +17,17 @@ import {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const { limit, offset } = parsePaginationParams(searchParams, { limit: 20 });
+
     const result = await mockApi.listPosts({
       category: parsePostCategoryQuery(searchParams.get("category")),
       status: parsePostStatusQuery(searchParams.get("status")),
-      search: searchParams.get("search") ?? searchParams.get("q") ?? undefined,
+      search: parseSearchKeyword(searchParams),
       sort: parsePostSortQuery(searchParams.get("sort")),
-      promoted_only: searchParams.get("promoted_only") === "true",
-      include_hidden: searchParams.get("include_hidden") === "true",
-      limit: parsePositiveInt(searchParams.get("limit"), 20),
-      offset: parsePositiveInt(searchParams.get("offset"), 0),
+      promoted_only: parseBooleanFlag(searchParams, "promoted_only"),
+      include_hidden: parseBooleanFlag(searchParams, "include_hidden"),
+      limit,
+      offset,
     });
 
     return toNextResponse(result);
