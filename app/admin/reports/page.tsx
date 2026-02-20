@@ -2,11 +2,14 @@ import Link from "next/link";
 import { REPORT_STATUSES } from "@/src/domain/enums";
 import type { ReportStatus } from "@/src/domain/enums";
 import { mockApi } from "@/src/server/mockApiSingleton";
+import { parsePaginationParams } from "@/src/server/params";
 import { ReportActions } from "./reportActions";
 
 interface PageProps {
   searchParams: {
     status?: string;
+    page?: string;
+    limit?: string;
   };
 }
 
@@ -16,18 +19,32 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
   )
     ? (searchParams.status as ReportStatus)
     : undefined;
+  const pageQuery = new URLSearchParams();
+  if (searchParams.status) {
+    pageQuery.set("status", searchParams.status);
+  }
+  if (searchParams.page) {
+    pageQuery.set("page", searchParams.page);
+  }
+  if (searchParams.limit) {
+    pageQuery.set("limit", searchParams.limit);
+  }
+  const { limit, offset, page } = parsePaginationParams(pageQuery, { limit: 20 });
 
   const [sessionResult, reportsResult] = await Promise.all([
     mockApi.getSession(),
     mockApi.listReports({
       status,
-      limit: 50,
-      offset: 0,
+      limit,
+      offset,
     }),
   ]);
 
   const role = sessionResult.ok ? sessionResult.data.role : "guest";
   const reports = reportsResult.ok ? reportsResult.data.items : [];
+  const total = reportsResult.ok ? reportsResult.data.total : 0;
+  const hasMore = reportsResult.ok ? reportsResult.data.has_more : false;
+  const selectedLimit = String(limit);
 
   return (
     <>
@@ -54,6 +71,17 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                 </option>
               ))}
             </select>
+            <select
+              className="select"
+              name="limit"
+              defaultValue={selectedLimit}
+              style={{ maxWidth: 160 }}
+            >
+              <option value="10">10개씩</option>
+              <option value="20">20개씩</option>
+              <option value="50">50개씩</option>
+            </select>
+            <input type="hidden" name="page" value="1" />
             <button className="btn" type="submit">
               필터 적용
             </button>
@@ -94,6 +122,38 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
               </article>
             ) : null}
           </section>
+
+          <div className="post-meta" style={{ marginTop: 16, justifyContent: "space-between" }}>
+            <span>
+              총 {total.toLocaleString()}건 · {page}페이지
+            </span>
+            <div className="row-2" style={{ maxWidth: 280 }}>
+              {page > 1 ? (
+                <Link
+                  className="btn"
+                  href={buildReportsPageHref({ status, page: page - 1, limit })}
+                >
+                  이전
+                </Link>
+              ) : (
+                <button className="btn" type="button" disabled>
+                  이전
+                </button>
+              )}
+              {hasMore ? (
+                <Link
+                  className="btn"
+                  href={buildReportsPageHref({ status, page: page + 1, limit })}
+                >
+                  다음
+                </Link>
+              ) : (
+                <button className="btn" type="button" disabled>
+                  다음
+                </button>
+              )}
+            </div>
+          </div>
         </>
       ) : (
         <section className="card" style={{ marginTop: 16 }}>
@@ -110,3 +170,28 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
     </>
   );
 }
+
+const buildReportsPageHref = ({
+  status,
+  page,
+  limit,
+}: {
+  status?: ReportStatus;
+  page: number;
+  limit: number;
+}): string => {
+  const params = new URLSearchParams();
+
+  if (status) {
+    params.set("status", status);
+  }
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+  if (limit !== 20) {
+    params.set("limit", String(limit));
+  }
+
+  const query = params.toString();
+  return query ? `/admin/reports?${query}` : "/admin/reports";
+};
