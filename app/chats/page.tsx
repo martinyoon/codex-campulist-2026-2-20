@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { mockApi } from "@/src/server/mockApiSingleton";
+import { ChatListRefreshControls } from "./chatListRefreshControls";
 
 export default async function ChatsPage() {
   const [sessionResult, threadsResult] = await Promise.all([
@@ -47,6 +48,8 @@ export default async function ChatsPage() {
           </article>
         ) : null}
       </section>
+
+      <ChatListRefreshControls />
     </>
   );
 }
