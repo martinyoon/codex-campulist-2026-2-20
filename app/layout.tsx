@@ -27,6 +27,7 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const sessionResult = await mockApi.getSession();
+  const sessionRole = sessionResult.ok ? sessionResult.data.role : null;
   const sessionText = sessionResult.ok
     ? `${sessionResult.data.role} · ${sessionResult.data.campus_id}`
     : "guest";
@@ -52,7 +53,7 @@ export default async function RootLayout({
               <Link href="/boards/store">상점홍보</Link>
               <Link href="/chats">채팅</Link>
               <Link href="/me/posts">내 글</Link>
-              <Link href="/admin/reports">신고관리</Link>
+              {sessionRole === "admin" ? <Link href="/admin/reports">신고관리</Link> : null}
               <Link href="/write">글쓰기</Link>
               <Link href="/login">역할변경</Link>
             </nav>

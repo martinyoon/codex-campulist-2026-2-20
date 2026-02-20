@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 const POLL_INTERVAL_MS = 5000;
@@ -8,20 +8,36 @@ const POLL_INTERVAL_MS = 5000;
 export function ChatListRefreshControls() {
   const router = useRouter();
   const [isPolling, setPolling] = useState(true);
+  const [isPageVisible, setPageVisible] = useState(true);
   const [lastRefreshedAt, setLastRefreshedAt] = useState(
     () => new Date().toISOString(),
   );
   const [isPending, startTransition] = useTransition();
 
-  const refreshNow = () => {
+  const refreshNow = useCallback(() => {
     startTransition(() => {
       router.refresh();
       setLastRefreshedAt(new Date().toISOString());
     });
-  };
+  }, [router]);
 
   useEffect(() => {
-    if (!isPolling) {
+    const onVisibilityChange = () => {
+      const visible = document.visibilityState === "visible";
+      setPageVisible(visible);
+      if (visible) {
+        refreshNow();
+      }
+    };
+
+    onVisibilityChange();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [refreshNow]);
+
+  useEffect(() => {
+    if (!isPolling || !isPageVisible) {
       return;
     }
     const timer = setInterval(() => {
@@ -29,7 +45,7 @@ export function ChatListRefreshControls() {
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(timer);
-  }, [isPolling]);
+  }, [isPolling, isPageVisible, refreshNow]);
 
   return (
     <section className="card" style={{ marginTop: 16 }}>
@@ -56,7 +72,8 @@ export function ChatListRefreshControls() {
         </div>
       </div>
       <p className="note" style={{ marginTop: 10 }}>
-        채팅 목록은 5초 간격으로 자동 갱신됩니다.
+        채팅 목록은 5초 간격으로 자동 갱신됩니다. 탭이 비활성화되면 자동 갱신이
+        일시 정지됩니다.
       </p>
     </section>
   );

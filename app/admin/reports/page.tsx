@@ -14,6 +14,32 @@ interface PageProps {
 }
 
 export default async function AdminReportsPage({ searchParams }: PageProps) {
+  const sessionResult = await mockApi.getSession();
+  const role = sessionResult.ok ? sessionResult.data.role : "guest";
+
+  if (role !== "admin") {
+    return (
+      <>
+        <section className="hero">
+          <h1>신고 관리</h1>
+          <p>
+            관리자 전용 페이지입니다. 현재 역할: <strong>{role}</strong>
+          </p>
+        </section>
+        <section className="card" style={{ marginTop: 16 }}>
+          <p className="muted">
+            접근 권한이 없습니다. 관리자 역할로 전환한 뒤 다시 시도하세요.
+          </p>
+          <div style={{ marginTop: 10 }}>
+            <Link href="/login" className="btn btn-primary">
+              역할 전환하기
+            </Link>
+          </div>
+        </section>
+      </>
+    );
+  }
+
   const status = REPORT_STATUSES.includes(
     searchParams.status as (typeof REPORT_STATUSES)[number],
   )
@@ -31,16 +57,11 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
   }
   const { limit, offset, page } = parsePaginationParams(pageQuery, { limit: 20 });
 
-  const [sessionResult, reportsResult] = await Promise.all([
-    mockApi.getSession(),
-    mockApi.listReports({
-      status,
-      limit,
-      offset,
-    }),
-  ]);
-
-  const role = sessionResult.ok ? sessionResult.data.role : "guest";
+  const reportsResult = await mockApi.listReports({
+    status,
+    limit,
+    offset,
+  });
   const reports = reportsResult.ok ? reportsResult.data.items : [];
   const total = reportsResult.ok ? reportsResult.data.total : 0;
   const hasMore = reportsResult.ok ? reportsResult.data.has_more : false;

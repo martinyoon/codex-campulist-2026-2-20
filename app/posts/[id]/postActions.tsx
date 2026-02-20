@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface ApiResponse<T> {
   ok: boolean;
@@ -13,6 +14,7 @@ interface ApiResponse<T> {
 }
 
 export function PostActions({ postId }: { postId: string }) {
+  const router = useRouter();
   const [chatMessage, setChatMessage] = useState<string>("");
   const [reportMessage, setReportMessage] = useState<string>("");
   const [busy, setBusy] = useState<"chat" | "report" | null>(null);
@@ -31,7 +33,8 @@ export function PostActions({ postId }: { postId: string }) {
         setChatMessage(result.error?.message ?? "채팅 시작 실패");
         return;
       }
-      setChatMessage(`채팅방 생성/연결 완료: ${result.data.id}`);
+      router.push(`/chats/${result.data.id}`);
+      router.refresh();
     } catch {
       setChatMessage("요청 중 오류가 발생했습니다.");
     } finally {
