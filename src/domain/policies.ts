@@ -1,0 +1,41 @@
+import type { PostCategory, UserRole } from "./enums";
+import type { Post, SessionContext } from "./types";
+
+const CATEGORY_ACCESS_BY_ROLE: Record<UserRole, PostCategory[]> = {
+  student: ["market", "housing", "jobs"],
+  professor: ["market", "housing", "jobs"],
+  staff: ["market", "housing", "jobs"],
+  merchant: ["store", "jobs"],
+  admin: ["market", "housing", "jobs", "store"],
+};
+
+export const isAdmin = (session: SessionContext): boolean =>
+  session.role === "admin";
+
+export const canCreateInCategory = (
+  session: SessionContext,
+  category: PostCategory,
+): boolean => CATEGORY_ACCESS_BY_ROLE[session.role].includes(category);
+
+export const canReadPost = (session: SessionContext, post: Post): boolean => {
+  if (isAdmin(session)) {
+    return true;
+  }
+  if (session.campus_id !== post.campus_id) {
+    return false;
+  }
+  if (post.status === "hidden") {
+    return false;
+  }
+  return post.deleted_at === null;
+};
+
+export const canMutatePost = (session: SessionContext, post: Post): boolean => {
+  if (isAdmin(session)) {
+    return true;
+  }
+  return session.user_id === post.author_id && session.campus_id === post.campus_id;
+};
+
+export const canModerateReports = (session: SessionContext): boolean =>
+  session.role === "admin";

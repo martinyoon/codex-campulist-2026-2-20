@@ -1,0 +1,61 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { mockApi } from "@/src/server/mockApiSingleton";
+import { PostActions } from "./postActions";
+
+interface PageProps {
+  params: { id: string };
+}
+
+export default async function PostDetailPage({ params }: PageProps) {
+  const result = await mockApi.getPost(params.id);
+
+  if (!result.ok || !result.data) {
+    notFound();
+  }
+
+  const post = result.data;
+
+  return (
+    <>
+      <section className="hero">
+        <div className="chip">{post.category}</div>
+        <h1 style={{ marginTop: 10 }}>{post.title}</h1>
+        <p>
+          {post.location_hint ? `거래/활동 위치: ${post.location_hint} · ` : ""}
+          조회 {post.view_count + 1}
+        </p>
+      </section>
+
+      <article className="card" style={{ marginTop: 16 }}>
+        <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{post.body}</p>
+        <div className="post-meta">
+          <span>작성: {new Date(post.created_at).toLocaleString("ko-KR")}</span>
+          <span>상태: {post.status}</span>
+          {post.price_krw !== null ? <span>가격: {post.price_krw.toLocaleString()}원</span> : null}
+          {post.is_promoted ? <span className="chip chip-accent">상단노출중</span> : null}
+        </div>
+        {post.tags.length > 0 ? (
+          <div className="post-meta">
+            {post.tags.map((tag) => (
+              <span key={tag} className="chip">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </article>
+
+      <PostActions postId={post.id} />
+
+      <div className="row-2" style={{ marginTop: 16 }}>
+        <Link href={`/boards/${post.category}`} className="btn">
+          목록으로
+        </Link>
+        <Link href="/write" className="btn">
+          새 글 쓰기
+        </Link>
+      </div>
+    </>
+  );
+}
