@@ -22,15 +22,19 @@ export class InMemoryPostRepository implements PostRepository {
 
   async list(query: PostListQuery, session: SessionContext) {
     const now = nowIso();
-    const includeHidden = query.include_hidden === true && isAdmin(session);
+    const isAdminUser = isAdmin(session);
+    const includeHidden = query.include_hidden === true && isAdminUser;
     const targetCampusId =
-      isAdmin(session) && query.campus_id ? query.campus_id : session.campus_id;
+      isAdminUser && query.campus_id ? query.campus_id : session.campus_id;
 
     let rows = this.db.posts.filter((post) => post.deleted_at === null);
     rows = rows.filter((post) => post.campus_id === targetCampusId);
-
-    if (!includeHidden) {
-      rows = rows.filter((post) => post.status !== "hidden");
+    if (isAdminUser) {
+      if (!includeHidden) {
+        rows = rows.filter((post) => post.status !== "hidden");
+      }
+    } else {
+      rows = rows.filter((post) => canReadPost(session, post));
     }
 
     if (query.category) {

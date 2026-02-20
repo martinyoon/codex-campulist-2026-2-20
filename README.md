@@ -88,6 +88,11 @@ Post status updates now apply an explicit transition matrix (non-admin):
 - `reserved -> active/closed`
 - `closed -> active`
 
+Post visibility policy (non-admin):
+- `hidden` is never visible
+- `draft` is visible only to the author
+- `active/reserved/closed` are visible within same campus
+
 ## Supabase Migration Path
 
 1. Keep `src/domain/types.ts` and `src/domain/repositories.ts` unchanged.

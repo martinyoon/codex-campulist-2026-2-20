@@ -1,4 +1,5 @@
 import { AppError } from "../../domain/errors";
+import { canReadPost } from "../../domain/policies";
 import type { ChatRepository } from "../../domain/repositories";
 import type {
   ChatMessage,
@@ -46,7 +47,11 @@ export class InMemoryChatRepository implements ChatRepository {
       (item) => item.id === input.post_id && item.deleted_at === null,
     );
     ensure(!!post, "NOT_FOUND", "Post not found.");
-    ensure(post.status !== "hidden", "BAD_REQUEST", "Cannot start chat for hidden post.");
+    ensure(
+      canReadPost(session, post),
+      "FORBIDDEN",
+      "Cannot start chat for inaccessible post.",
+    );
     ensure(post.campus_id === session.campus_id, "FORBIDDEN", "Cross-campus chat is blocked.");
     ensure(post.author_id !== session.user_id, "BAD_REQUEST", "Cannot chat on your own post.");
 

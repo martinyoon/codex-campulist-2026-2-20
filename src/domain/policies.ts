@@ -24,10 +24,16 @@ export const canReadPost = (session: SessionContext, post: Post): boolean => {
   if (session.campus_id !== post.campus_id) {
     return false;
   }
+  if (post.deleted_at !== null) {
+    return false;
+  }
   if (post.status === "hidden") {
     return false;
   }
-  return post.deleted_at === null;
+  if (post.status === "draft") {
+    return session.user_id === post.author_id;
+  }
+  return true;
 };
 
 export const canMutatePost = (session: SessionContext, post: Post): boolean => {
