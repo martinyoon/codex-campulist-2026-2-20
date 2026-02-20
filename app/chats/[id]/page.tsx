@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { mockApi } from "@/src/server/mockApiSingleton";
 import { ChatComposer } from "./chatComposer";
+import { ChatRefreshControls } from "./chatRefreshControls";
 
 interface PageProps {
   params: { id: string };
@@ -50,6 +51,8 @@ export default async function ChatThreadPage({ params }: PageProps) {
           </article>
         ) : null}
       </section>
+
+      <ChatRefreshControls />
 
       <ChatComposer threadId={thread.id} />
 
