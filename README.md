@@ -38,6 +38,7 @@ KAIST 대전 본원 파일럿용 CampuList 시제품입니다.
 - `GET /api/reports`
 - `POST /api/reports`
 - `PATCH /api/reports/[id]/resolve`
+- `GET /api/health`
 
 ## Tech Structure
 
@@ -75,6 +76,10 @@ Open `http://localhost:6001`
 - Repository skeleton:
   - `src/supabase/repositories.ts`
   - `src/supabase/env.ts`
+- Provider safety:
+  - `DATA_PROVIDER=supabase`로 설정되어도 준비가 완료되지 않으면 자동으로 mock provider로 폴백
+  - `SUPABASE_REPOSITORY_READY=true`를 켜기 전까지는 supabase provider를 실제로 사용하지 않음
+  - `/api/health`에서 현재 선택 provider / 실제 사용 provider / 폴백 사유 확인 가능
 
 `/write` page now requires `promotion_until` when `is_promoted` is enabled, so promoted listing behavior is consistent with backend filters.
 
