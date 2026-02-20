@@ -50,6 +50,9 @@ export default async function RootLayout({
               <Link href="/boards/housing">주거</Link>
               <Link href="/boards/jobs">일자리</Link>
               <Link href="/boards/store">상점홍보</Link>
+              <Link href="/chats">채팅</Link>
+              <Link href="/me/posts">내 글</Link>
+              <Link href="/admin/reports">신고관리</Link>
               <Link href="/write">글쓰기</Link>
               <Link href="/login">역할변경</Link>
             </nav>

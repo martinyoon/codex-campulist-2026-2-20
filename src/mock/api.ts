@@ -10,7 +10,13 @@ import type {
   StartChatInput,
   UpdatePostInput,
 } from "../domain/types";
-import { createMockContext, type MockContext } from "./repositories";
+import type {
+  ChatRepository,
+  PostRepository,
+  ReportRepository,
+  SessionRepository,
+} from "../domain/repositories";
+import { createMockContext } from "./repositories";
 
 interface ApiErrorPayload {
   status: number;
@@ -22,8 +28,19 @@ export type ApiResult<T> =
   | { ok: true; status: number; data: T }
   | { ok: false; status: number; error: ApiErrorPayload };
 
+export interface ApiRepositories {
+  sessions: SessionRepository;
+  posts: PostRepository;
+  chats: ChatRepository;
+  reports: ReportRepository;
+}
+
+interface ApiContext {
+  repositories: ApiRepositories;
+}
+
 export class MockApi {
-  constructor(private readonly context: MockContext) {}
+  constructor(private readonly context: ApiContext) {}
 
   async login(input: MockLoginInput) {
     return this.run(() => this.context.repositories.sessions.mockLogin(input), 200);
@@ -168,3 +185,7 @@ export class MockApi {
 }
 
 export const createMockApi = (): MockApi => new MockApi(createMockContext());
+
+export const createApiFromRepositories = (
+  repositories: ApiRepositories,
+): MockApi => new MockApi({ repositories });

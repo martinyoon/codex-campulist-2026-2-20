@@ -6,6 +6,7 @@ import {
   isAdmin,
 } from "../../domain/policies";
 import type { PostRepository } from "../../domain/repositories";
+import type { PostStatus } from "../../domain/enums";
 import type {
   CreatePostInput,
   Post,
@@ -132,6 +133,11 @@ export class InMemoryPostRepository implements PostRepository {
   async update(postId: string, input: UpdatePostInput, session: SessionContext) {
     const post = this.getMutablePost(postId);
     ensure(canMutatePost(session, post), "FORBIDDEN", "You cannot edit this post.");
+    ensure(
+      post.status !== "hidden" || isAdmin(session),
+      "FORBIDDEN",
+      "Hidden posts can only be edited by admin.",
+    );
 
     if (input.category && input.category !== post.category) {
       ensure(canCreateInCategory(session, input.category), "FORBIDDEN", "Role cannot move this post to selected category.");
@@ -168,9 +174,11 @@ export class InMemoryPostRepository implements PostRepository {
     }
 
     if (input.status) {
-      if (input.status === "hidden") {
-        ensure(isAdmin(session), "FORBIDDEN", "Only admin can hide posts.");
-      }
+      ensure(
+        canTransitionPostStatus(post.status, input.status, isAdmin(session)),
+        "CONFLICT",
+        `Invalid post status transition: ${post.status} -> ${input.status}.`,
+      );
       post.status = input.status;
     }
 
@@ -256,3 +264,27 @@ const comparePosts = (
 
 const numericPrice = (post: Post): number =>
   post.price_krw === null ? Number.MAX_SAFE_INTEGER : post.price_krw;
+
+const STATUS_TRANSITIONS: Record<PostStatus, readonly PostStatus[]> = {
+  draft: ["active"],
+  active: ["reserved", "closed"],
+  reserved: ["active", "closed"],
+  closed: ["active"],
+  hidden: [],
+};
+
+const canTransitionPostStatus = (
+  from: PostStatus,
+  to: PostStatus,
+  isAdminUser: boolean,
+): boolean => {
+  if (from === to) {
+    return true;
+  }
+
+  if (isAdminUser) {
+    return true;
+  }
+
+  return STATUS_TRANSITIONS[from].includes(to);
+};

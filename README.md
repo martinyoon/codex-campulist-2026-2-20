@@ -13,8 +13,12 @@ KAIST 대전 본원 파일럿용 CampuList 시제품입니다.
 
 - `/` 홈
 - `/login` 목업 로그인(역할 전환)
-- `/boards/[category]` 카테고리 목록 + 검색/정렬
-- `/posts/[id]` 상세 + 채팅 시작 + 신고
+- `/boards/[category]` 카테고리 목록 + 검색/정렬 + 페이지네이션
+- `/posts/[id]` 상세 + 채팅 시작 + 신고 접수
+- `/chats` 내 채팅 목록
+- `/chats/[id]` 채팅 메시지 조회/전송
+- `/me/posts` 내 게시글 관리(상태 변경/삭제)
+- `/admin/reports` 신고 관리(관리자 처리)
 - `/write` 글쓰기
 
 ## Implemented APIs
@@ -27,7 +31,10 @@ KAIST 대전 본원 파일럿용 CampuList 시제품입니다.
 - `PATCH /api/posts/[id]`
 - `DELETE /api/posts/[id]`
 - `POST /api/posts/[id]/promote`
+- `GET /api/chats`
 - `POST /api/chats/start`
+- `GET /api/chats/[id]/messages`
+- `POST /api/chats/[id]/messages`
 - `GET /api/reports`
 - `POST /api/reports`
 - `PATCH /api/reports/[id]/resolve`
@@ -70,6 +77,11 @@ Open `http://localhost:6001`
   - `src/supabase/env.ts`
 
 `/write` page now requires `promotion_until` when `is_promoted` is enabled, so promoted listing behavior is consistent with backend filters.
+
+Post status updates now apply an explicit transition matrix (non-admin):
+- `active -> reserved/closed`
+- `reserved -> active/closed`
+- `closed -> active`
 
 ## Supabase Migration Path
 

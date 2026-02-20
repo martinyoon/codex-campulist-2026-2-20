@@ -16,6 +16,7 @@ import type {
   CreateReportInput,
   MockLoginInput,
   ResolveReportInput,
+  SendMessageInput,
   StartChatInput,
   UpdatePostInput,
 } from "@/src/domain/types";
@@ -359,6 +360,15 @@ export const parseStartChatInput = (value: unknown): StartChatInput => {
 
   return {
     post_id: readUuidString(body.post_id, "post_id"),
+  };
+};
+
+export const parseSendMessageInput = (value: unknown): SendMessageInput => {
+  const body = toRecord(value, "Request body");
+  ensureKnownKeys(body, ["body"], "body");
+
+  return {
+    body: readRequiredString(body.body, "body"),
   };
 };
 

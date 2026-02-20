@@ -16,6 +16,7 @@ interface PageProps {
   searchParams: {
     q?: string;
     sort?: string;
+    page?: string;
   };
 }
 
@@ -29,15 +30,21 @@ export default async function BoardPage({ params, searchParams }: PageProps) {
   )
     ? (searchParams.sort as PostSortOption)
     : "newest";
+  const page = parsePage(searchParams.page);
+  const limit = 12;
+  const offset = (page - 1) * limit;
 
   const result = await mockApi.listPosts({
     category: params.category as (typeof POST_CATEGORIES)[number],
     search: searchParams.q,
     sort,
-    limit: 40,
+    limit,
+    offset,
   });
 
   const list = result.ok ? result.data.items : [];
+  const total = result.ok ? result.data.total : 0;
+  const hasMore = result.ok ? result.data.has_more : false;
 
   return (
     <>
@@ -91,6 +98,72 @@ export default async function BoardPage({ params, searchParams }: PageProps) {
           </article>
         ) : null}
       </section>
+
+      <div className="post-meta" style={{ marginTop: 16, justifyContent: "space-between" }}>
+        <span>
+          총 {total.toLocaleString()}건 · {page}페이지
+        </span>
+        <div className="row-2" style={{ maxWidth: 280 }}>
+          {page > 1 ? (
+            <Link
+              href={buildPageHref(params.category, searchParams, page - 1)}
+              className="btn"
+            >
+              이전
+            </Link>
+          ) : (
+            <button className="btn" type="button" disabled>
+              이전
+            </button>
+          )}
+          {hasMore ? (
+            <Link
+              href={buildPageHref(params.category, searchParams, page + 1)}
+              className="btn"
+            >
+              다음
+            </Link>
+          ) : (
+            <button className="btn" type="button" disabled>
+              다음
+            </button>
+          )}
+        </div>
+      </div>
     </>
   );
 }
+
+const parsePage = (value: string | undefined): number => {
+  if (!value) {
+    return 1;
+  }
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return 1;
+  }
+  return parsed;
+};
+
+const buildPageHref = (
+  category: string,
+  searchParams: PageProps["searchParams"],
+  page: number,
+): string => {
+  const params = new URLSearchParams();
+
+  if (searchParams.q && searchParams.q.trim().length > 0) {
+    params.set("q", searchParams.q);
+  }
+  if (searchParams.sort && searchParams.sort.trim().length > 0) {
+    params.set("sort", searchParams.sort);
+  }
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+  return query
+    ? `/boards/${category}?${query}`
+    : `/boards/${category}`;
+};
