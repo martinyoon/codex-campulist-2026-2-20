@@ -56,6 +56,17 @@ const USER_IDS = {
   },
 } as const;
 
+type SeedUserRole = "student" | "professor" | "staff" | "merchant" | "admin";
+
+const USER_ROLE_BY_ID: Record<string, SeedUserRole> = Object.values(
+  USER_IDS,
+).reduce<Record<string, SeedUserRole>>((accumulator, usersByRole) => {
+  for (const [role, userId] of Object.entries(usersByRole)) {
+    accumulator[userId] = role as SeedUserRole;
+  }
+  return accumulator;
+}, {});
+
 const POST_IDS = {
   kaist: {
     market: "0f09af0d-74f8-4f63-b28a-26fb918f1964",
@@ -189,6 +200,8 @@ const makePost = ({
   campus_id,
   category,
   author_id,
+  author_role_snapshot: USER_ROLE_BY_ID[author_id] ?? null,
+  show_affiliation_prefix: true,
   title,
   body,
   price_krw,

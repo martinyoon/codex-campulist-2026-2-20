@@ -3,6 +3,7 @@ import { mockApi } from "@/src/server/mockApiSingleton";
 import { getPostCategoryLabel } from "@/src/ui/labelMap";
 import { getCampusNameById } from "@/src/ui/campuses";
 import { OwnerPostManageLink } from "@/app/components/ownerPostManageLink";
+import { formatDisplayPostTitle } from "@/src/ui/postDisplayTitle";
 
 const categories = [
   { slug: "market", title: "중고거래", desc: "교재, 전자기기, 생활용품 거래" },
@@ -60,7 +61,7 @@ export default async function HomePage() {
         {promoted.map((post) => (
           <article key={post.id} className="post-item">
             <h4>
-              <Link href={`/posts/${post.id}`}>{post.title}</Link>
+              <Link href={`/posts/${post.id}`}>{formatDisplayPostTitle(post)}</Link>
             </h4>
             <p className="muted">{post.body.slice(0, 80)}</p>
             <div className="post-meta">
@@ -87,7 +88,7 @@ export default async function HomePage() {
         {latest.map((post) => (
           <article key={post.id} className="post-item">
             <h4>
-              <Link href={`/posts/${post.id}`}>{post.title}</Link>
+              <Link href={`/posts/${post.id}`}>{formatDisplayPostTitle(post)}</Link>
             </h4>
             <p className="muted">{post.body.slice(0, 100)}</p>
             <div className="post-meta">

@@ -112,6 +112,8 @@ export class InMemoryPostRepository implements PostRepository {
       campus_id: isAdmin(session) ? input.campus_id ?? session.campus_id : session.campus_id,
       category: input.category,
       author_id: session.user_id,
+      author_role_snapshot: session.role,
+      show_affiliation_prefix: input.show_affiliation_prefix ?? true,
       title: input.title.trim(),
       body: input.body.trim(),
       price_krw: input.price_krw ?? null,

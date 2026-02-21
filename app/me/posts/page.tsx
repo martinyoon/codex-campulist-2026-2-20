@@ -7,6 +7,7 @@ import { MyPostActions } from "./postActions";
 import { EmptyState, ErrorState } from "@/app/stateBlocks";
 import { getPostStatusLabel } from "@/src/ui/labelMap";
 import { StatusBadge } from "@/app/components/statusBadge";
+import { formatDisplayPostTitle } from "@/src/ui/postDisplayTitle";
 
 interface PageProps {
   searchParams: {
@@ -152,7 +153,7 @@ export default async function MyPostsPage({ searchParams }: PageProps) {
         {posts.map((post) => (
           <article key={post.id} className="post-item">
             <h4>
-              <Link href={`/posts/${post.id}`}>{post.title}</Link>
+              <Link href={`/posts/${post.id}`}>{formatDisplayPostTitle(post)}</Link>
             </h4>
             <p className="muted">{post.body.slice(0, 140)}</p>
             <div className="post-meta">

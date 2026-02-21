@@ -5,6 +5,7 @@ import { PostActions } from "./postActions";
 import { getPostCategoryLabel } from "@/src/ui/labelMap";
 import { StatusBadge } from "@/app/components/statusBadge";
 import { OwnerPostManageLink } from "@/app/components/ownerPostManageLink";
+import { formatDisplayPostTitle } from "@/src/ui/postDisplayTitle";
 
 interface PageProps {
   params: { id: string };
@@ -28,7 +29,7 @@ export default async function PostDetailPage({ params }: PageProps) {
     <>
       <section className="hero">
         <div className="chip">{getPostCategoryLabel(post.category)}</div>
-        <h1 style={{ marginTop: 10 }}>{post.title}</h1>
+        <h1 style={{ marginTop: 10 }}>{formatDisplayPostTitle(post)}</h1>
         <p>
           {post.location_hint ? `거래/활동 위치: ${post.location_hint} · ` : ""}
           조회 {post.view_count + 1}

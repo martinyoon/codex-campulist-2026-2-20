@@ -257,6 +257,7 @@ export const parseCreatePostInput = (value: unknown): CreatePostInput => {
       "category",
       "title",
       "body",
+      "show_affiliation_prefix",
       "price_krw",
       "tags",
       "location_hint",
@@ -305,6 +306,10 @@ export const parseCreatePostInput = (value: unknown): CreatePostInput => {
     category: readEnumValue(body.category, POST_CATEGORIES, "category"),
     title: readRequiredString(body.title, "title"),
     body: readRequiredString(body.body, "body"),
+    show_affiliation_prefix: readOptionalBoolean(
+      body.show_affiliation_prefix,
+      "show_affiliation_prefix",
+    ),
     price_krw: readOptionalNullableNumber(body.price_krw, "price_krw"),
     tags: readOptionalStringArray(body.tags, "tags"),
     location_hint: readOptionalNullableString(body.location_hint, "location_hint"),

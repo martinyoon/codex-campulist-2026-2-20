@@ -38,6 +38,8 @@ export interface Post extends BaseEntity {
   campus_id: string;
   category: PostCategory;
   author_id: string;
+  author_role_snapshot: UserRole | null;
+  show_affiliation_prefix: boolean;
   title: string;
   body: string;
   price_krw: number | null;
@@ -109,6 +111,7 @@ export interface CreatePostInput {
   category: PostCategory;
   title: string;
   body: string;
+  show_affiliation_prefix?: boolean;
   price_krw?: number | null;
   tags?: string[];
   location_hint?: string | null;

@@ -10,6 +10,7 @@ import {
 import { getAllowedCategoriesForRole } from "@/src/domain/policies";
 import { useToast } from "@/app/components/toastProvider";
 import { getPostCategoryLabel, getUserRoleLabel } from "@/src/ui/labelMap";
+import { formatDisplayTitle } from "@/src/ui/postDisplayTitle";
 
 interface CreatePostResponse {
   ok: boolean;
@@ -42,7 +43,10 @@ export default function WritePage() {
   const [message, setMessage] = useState("");
   const [isPromoted, setIsPromoted] = useState(false);
   const [category, setCategory] = useState<PostCategory>("market");
+  const [title, setTitle] = useState("");
+  const [showAffiliationPrefix, setShowAffiliationPrefix] = useState(true);
   const [sessionRole, setSessionRole] = useState<UserRole | null>(null);
+  const [sessionCampusId, setSessionCampusId] = useState<string | null>(null);
   const [isSessionChecked, setSessionChecked] = useState(false);
   const [sessionErrorMessage, setSessionErrorMessage] = useState<string | null>(
     null,
@@ -60,18 +64,21 @@ export default function WritePage() {
         }
         if (!result.ok || !result.data) {
           setSessionRole(null);
+          setSessionCampusId(null);
           setSessionErrorMessage(
             result.error?.message ?? "세션을 확인하지 못했습니다.",
           );
           return;
         }
         setSessionRole(result.data.role);
+        setSessionCampusId(result.data.campus_id);
         setSessionErrorMessage(null);
       } catch {
         if (!mounted) {
           return;
         }
         setSessionRole(null);
+        setSessionCampusId(null);
         setSessionErrorMessage("세션 확인 중 오류가 발생했습니다.");
       } finally {
         if (mounted) {
@@ -124,6 +131,12 @@ export default function WritePage() {
     isSubmitting ||
     !isSessionChecked ||
     (sessionRole !== null && !isCategoryAllowed);
+  const displayTitlePreview = formatDisplayTitle({
+    title: title.trim() || "게시글 제목",
+    campus_id: sessionCampusId ?? "",
+    author_role_snapshot: sessionRole,
+    show_affiliation_prefix: showAffiliationPrefix,
+  });
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -168,8 +181,9 @@ export default function WritePage() {
 
     const payload = {
       category,
-      title: String(formData.get("title")),
+      title,
       body: String(formData.get("body")),
+      show_affiliation_prefix: showAffiliationPrefix,
       price_krw: priceRaw ? Number(priceRaw) : null,
       location_hint: String(formData.get("location_hint") ?? "").trim() || null,
       tags: tagsRaw
@@ -281,7 +295,21 @@ export default function WritePage() {
             minLength={2}
             required
             placeholder="게시글 제목"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
           />
+          <div className="note" style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+            <input
+              type="checkbox"
+              checked={showAffiliationPrefix}
+              onChange={(event) => setShowAffiliationPrefix(event.target.checked)}
+            />
+            제목에 소속 자동표시 ([캠퍼스][역할])
+          </div>
+          <div className="note">표시 제목 미리보기: {displayTitlePreview}</div>
+          {!sessionRole || !sessionCampusId ? (
+            <div className="note">세션 확인 후 소속 표기가 적용됩니다.</div>
+          ) : null}
         </label>
 
         <label>

@@ -6,6 +6,7 @@ import { mockApi } from "@/src/server/mockApiSingleton";
 import { EmptyState, ErrorState } from "@/app/stateBlocks";
 import { StatusBadge } from "@/app/components/statusBadge";
 import { OwnerPostManageLink } from "@/app/components/ownerPostManageLink";
+import { formatDisplayPostTitle } from "@/src/ui/postDisplayTitle";
 
 const categoryTitle: Record<string, string> = {
   market: "중고거래",
@@ -137,7 +138,7 @@ export default async function BoardPage({ params, searchParams }: PageProps) {
         {list.map((post) => (
           <article className="post-item" key={post.id}>
             <h4>
-              <Link href={`/posts/${post.id}`}>{post.title}</Link>
+              <Link href={`/posts/${post.id}`}>{formatDisplayPostTitle(post)}</Link>
             </h4>
             <p className="muted">{post.body.slice(0, 140)}</p>
             <div className="post-meta">
