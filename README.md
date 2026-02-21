@@ -1,6 +1,6 @@
 # CampuList Prototype (Supabase-free stage)
 
-KAIST 대전 본원 파일럿용 CampuList 시제품입니다.  
+대전 주요 대학(카이스트, 충남대, 한밭대, 목원대, 배재대, 우송대) 파일럿용 CampuList 시제품입니다.  
 현재는 Supabase 연결 없이 Mock Repository + Next.js App Router로 동작합니다.
 
 ## Goals
@@ -12,7 +12,7 @@ KAIST 대전 본원 파일럿용 CampuList 시제품입니다.
 ## Implemented Pages
 
 - `/` 홈
-- `/login` 목업 로그인(역할 전환)
+- `/login` 목업 로그인(역할 + 캠퍼스 전환)
 - `/boards/[category]` 카테고리 목록 + 검색/정렬 + 페이지네이션
 - `/posts/[id]` 상세 + 채팅 시작 + 신고 접수
 - `/chats` 내 채팅 목록 + 5초 자동 폴링 + 수동 새로고침

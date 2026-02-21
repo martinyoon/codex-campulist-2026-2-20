@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { USER_ROLES } from "@/src/domain/enums";
 import { useToast } from "@/app/components/toastProvider";
 import { getUserRoleLabel } from "@/src/ui/labelMap";
+import {
+  CAMPUS_OPTIONS,
+  DEFAULT_CAMPUS_ID,
+  getCampusNameById,
+} from "@/src/ui/campuses";
 
 interface LoginResult {
   ok: boolean;
@@ -24,6 +29,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { pushToast } = useToast();
   const [role, setRole] = useState<(typeof USER_ROLES)[number]>("student");
+  const [campusId, setCampusId] = useState<string>(DEFAULT_CAMPUS_ID);
   const [isSubmitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string>("");
 
@@ -38,6 +44,7 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           role,
+          campus_id: campusId,
         }),
       });
       const result = (await response.json()) as LoginResult;
@@ -49,7 +56,9 @@ export default function LoginPage() {
         return;
       }
 
-      const successMessage = `세션 변경 완료: ${getUserRoleLabel(result.data.role)}`;
+      const successMessage = `세션 변경 완료: ${getUserRoleLabel(result.data.role)} · ${getCampusNameById(
+        result.data.campus_id,
+      )}`;
       setMessage(successMessage);
       pushToast({ kind: "success", message: successMessage });
       router.push("/");
@@ -85,7 +94,20 @@ export default function LoginPage() {
             ))}
           </select>
         </label>
-        <div className="note">캠퍼스: KAIST 대전 본원 고정</div>
+        <label>
+          <div className="note">캠퍼스</div>
+          <select
+            className="select"
+            value={campusId}
+            onChange={(event) => setCampusId(event.target.value)}
+          >
+            {CAMPUS_OPTIONS.map((campus) => (
+              <option value={campus.id} key={campus.id}>
+                {campus.name_ko}
+              </option>
+            ))}
+          </select>
+        </label>
         <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
           {isSubmitting ? "변경 중..." : "세션 변경"}
         </button>

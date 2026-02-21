@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { mockApi } from "@/src/server/mockApiSingleton";
 import { getPostCategoryLabel } from "@/src/ui/labelMap";
+import { getCampusNameById } from "@/src/ui/campuses";
 
 const categories = [
   { slug: "market", title: "중고거래", desc: "교재, 전자기기, 생활용품 거래" },
@@ -10,29 +11,31 @@ const categories = [
 ];
 
 export default async function HomePage() {
-  const promotedResult = await mockApi.listPosts({
-    promoted_only: true,
-    limit: 3,
-  });
-  const latestResult = await mockApi.listPosts({
-    sort: "newest",
-    limit: 8,
-  });
+  const [sessionResult, promotedResult, latestResult] = await Promise.all([
+    mockApi.getSession(),
+    mockApi.listPosts({
+      promoted_only: true,
+      limit: 3,
+    }),
+    mockApi.listPosts({
+      sort: "newest",
+      limit: 8,
+    }),
+  ]);
 
   const promoted = promotedResult.ok ? promotedResult.data.items : [];
   const latest = latestResult.ok ? latestResult.data.items : [];
+  const campusName = sessionResult.ok
+    ? getCampusNameById(sessionResult.data.campus_id)
+    : "캠퍼스";
 
   return (
     <>
       <section className="hero">
-        <h1>
-          KAIST 대전 본원
-          <br />
-          파일럿 게시판 시제품
-        </h1>
+        <h1>{campusName}</h1>
         <p>
-          Supabase 미연결 단계에서 핵심 흐름(목록/상세/작성/채팅시작/신고)을
-          검증하기 위한 CampuList 프로토타입입니다.
+          Supabase 미연결 단계에서 핵심 흐름(목록/상세/작성/채팅시작/신고)을 검증하기
+          위한 CampuList 프로토타입입니다. 현재 선택한 캠퍼스 데이터만 표시됩니다.
         </p>
       </section>
 

@@ -187,6 +187,28 @@ a {
   gap: 10px;
 }
 
+.campus-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-strong);
+}
+
+.campus-switch-label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.campus-switch-select {
+  min-width: 172px;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
 .theme-toggle {
   display: inline-flex;
   gap: 4px;
@@ -579,5 +601,14 @@ a {
   .header-actions {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .campus-switch {
+    width: 100%;
+  }
+
+  .campus-switch-select {
+    min-width: 0;
   }
 }

@@ -6,11 +6,13 @@ import { ThemeModeToggle } from "@/app/themeModeToggle";
 import { TopNav } from "@/app/topNav";
 import { ToastProvider } from "@/app/components/toastProvider";
 import { getUserRoleLabel } from "@/src/ui/labelMap";
+import { getCampusNameById } from "@/src/ui/campuses";
+import { CampusQuickSwitch } from "@/app/campusQuickSwitch";
 
 export const metadata: Metadata = {
   title: "캠퍼스리스트 | CampuList Prototype",
   description:
-    "KAIST 대전 본원 파일럿을 위한 게시판 중심 CampuList 시제품",
+    "대전 주요 캠퍼스 파일럿을 위한 게시판 중심 CampuList 시제품",
 };
 
 const themeInitScript = `
@@ -31,10 +33,10 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const sessionResult = await mockApi.getSession();
   const sessionRole = sessionResult.ok ? sessionResult.data.role : null;
+  const sessionCampusId = sessionResult.ok ? sessionResult.data.campus_id : null;
   const sessionText = sessionResult.ok
-    ? `${getUserRoleLabel(sessionResult.data.role)} · ${sessionResult.data.campus_id.slice(
-        0,
-        8,
+    ? `${getUserRoleLabel(sessionResult.data.role)} · ${getCampusNameById(
+        sessionResult.data.campus_id,
       )}`
     : "게스트";
 
@@ -55,6 +57,10 @@ export default async function RootLayout({
               </Link>
               <TopNav sessionRole={sessionRole} />
               <div className="header-actions">
+                <CampusQuickSwitch
+                  sessionRole={sessionRole}
+                  campusId={sessionCampusId}
+                />
                 <ThemeModeToggle />
                 <div className="session-badge">{sessionText}</div>
               </div>
