@@ -16,6 +16,7 @@ export class InMemorySessionRepository implements SessionRepository {
     this.currentSession = {
       user_id: defaultUser.id,
       role: defaultUser.role,
+      student_type: defaultUser.student_type,
       campus_id: defaultUser.campus_id,
     };
   }
@@ -29,6 +30,7 @@ export class InMemorySessionRepository implements SessionRepository {
     this.currentSession = {
       user_id: nextUser.id,
       role: nextUser.role,
+      student_type: nextUser.student_type,
       campus_id: nextUser.campus_id,
     };
 
@@ -57,9 +59,18 @@ export class InMemorySessionRepository implements SessionRepository {
     }
 
     const targetCampusId = input.campus_id ?? this.currentSession.campus_id;
+    const targetStudentType =
+      input.role === "student"
+        ? input.student_type ??
+          (this.currentSession.role === "student"
+            ? this.currentSession.student_type
+            : "undergrad")
+        : null;
+
     return this.db.users.find(
       (user) =>
         user.role === input.role &&
+        (input.role !== "student" || user.student_type === targetStudentType) &&
         user.campus_id === targetCampusId &&
         user.deleted_at === null,
     );

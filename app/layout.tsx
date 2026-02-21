@@ -5,7 +5,7 @@ import { mockApi } from "@/src/server/mockApiSingleton";
 import { ThemeModeToggle } from "@/app/themeModeToggle";
 import { TopNav } from "@/app/topNav";
 import { ToastProvider } from "@/app/components/toastProvider";
-import { getUserRoleLabel } from "@/src/ui/labelMap";
+import { getUserRoleDisplayLabel } from "@/src/ui/labelMap";
 import { getCampusNameById } from "@/src/ui/campuses";
 import { CampusQuickSwitch } from "@/app/campusQuickSwitch";
 
@@ -33,11 +33,15 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const sessionResult = await mockApi.getSession();
   const sessionRole = sessionResult.ok ? sessionResult.data.role : null;
+  const sessionStudentType = sessionResult.ok
+    ? sessionResult.data.student_type
+    : null;
   const sessionCampusId = sessionResult.ok ? sessionResult.data.campus_id : null;
   const sessionText = sessionResult.ok
-    ? `${getUserRoleLabel(sessionResult.data.role)} · ${getCampusNameById(
-        sessionResult.data.campus_id,
-      )}`
+    ? `${getUserRoleDisplayLabel(
+        sessionResult.data.role,
+        sessionResult.data.student_type,
+      )} · ${getCampusNameById(sessionResult.data.campus_id)}`
     : "게스트";
 
   return (
@@ -59,6 +63,7 @@ export default async function RootLayout({
               <div className="header-actions">
                 <CampusQuickSwitch
                   sessionRole={sessionRole}
+                  sessionStudentType={sessionStudentType}
                   campusId={sessionCampusId}
                 />
                 <ThemeModeToggle />

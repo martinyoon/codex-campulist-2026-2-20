@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { UserRole } from "@/src/domain/enums";
+import type { StudentType, UserRole } from "@/src/domain/enums";
 import { CAMPUS_OPTIONS, getCampusNameById } from "@/src/ui/campuses";
 import { useToast } from "@/app/components/toastProvider";
 
@@ -12,6 +12,7 @@ interface MockLoginResult {
   data?: {
     user_id: string;
     role: UserRole;
+    student_type: StudentType | null;
     campus_id: string;
   };
   error?: {
@@ -22,11 +23,13 @@ interface MockLoginResult {
 
 interface CampusQuickSwitchProps {
   sessionRole: UserRole | null;
+  sessionStudentType: StudentType | null;
   campusId: string | null;
 }
 
 export function CampusQuickSwitch({
   sessionRole,
+  sessionStudentType,
   campusId,
 }: CampusQuickSwitchProps) {
   const router = useRouter();
@@ -58,6 +61,8 @@ export function CampusQuickSwitch({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           role: sessionRole,
+          student_type:
+            sessionRole === "student" ? sessionStudentType ?? "undergrad" : undefined,
           campus_id: nextCampusId,
         }),
       });

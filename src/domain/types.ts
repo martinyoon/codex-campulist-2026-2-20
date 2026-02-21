@@ -6,6 +6,7 @@ import type {
   ReportReason,
   ReportStatus,
   ReportTargetType,
+  StudentType,
   UserRole,
 } from "./enums";
 
@@ -27,6 +28,7 @@ export interface Campus extends BaseEntity {
 export interface User extends BaseEntity {
   campus_id: string;
   role: UserRole;
+  student_type: StudentType | null;
   display_name: string;
   nickname: string;
   trust_score: number;
@@ -39,6 +41,7 @@ export interface Post extends BaseEntity {
   category: PostCategory;
   author_id: string;
   author_role_snapshot: UserRole | null;
+  author_student_type_snapshot: StudentType | null;
   show_affiliation_prefix: boolean;
   title: string;
   body: string;
@@ -83,6 +86,7 @@ export interface Report extends BaseEntity {
 export interface SessionContext {
   user_id: string;
   role: UserRole;
+  student_type: StudentType | null;
   campus_id: string;
 }
 
@@ -159,6 +163,7 @@ export interface ResolveReportInput {
 
 export interface MockLoginInput {
   role: UserRole;
+  student_type?: StudentType;
   campus_id?: string;
   user_id?: string;
 }

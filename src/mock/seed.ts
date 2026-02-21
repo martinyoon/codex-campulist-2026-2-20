@@ -14,6 +14,7 @@ const CAMPUS_IDS = {
 const USER_IDS = {
   kaist: {
     student: "a12d9d7b-6d2e-4921-9d94-b6eb0e6f7fe1",
+    graduate: "a12d9d7b-6d2e-4921-9d94-b6eb0e6f7fe6",
     professor: "b7e9a2c1-9f16-4f8d-8a15-3b5c7788b2ef",
     staff: "c4d8f49a-6f8e-4f12-9f1a-0e59a0e2af61",
     merchant: "d3b4c1a8-5f7e-4b9d-8b21-7c1172d8101a",
@@ -21,6 +22,7 @@ const USER_IDS = {
   },
   cnu: {
     student: "f13a9c4d-7ed4-4cc3-a9f8-2f3640b61001",
+    graduate: "f13a9c4d-7ed4-4cc3-a9f8-2f3640b61006",
     professor: "f13a9c4d-7ed4-4cc3-a9f8-2f3640b61002",
     staff: "f13a9c4d-7ed4-4cc3-a9f8-2f3640b61003",
     merchant: "f13a9c4d-7ed4-4cc3-a9f8-2f3640b61004",
@@ -28,6 +30,7 @@ const USER_IDS = {
   },
   hanbat: {
     student: "1a55be6e-6b43-4b7d-9325-2f3640b62001",
+    graduate: "1a55be6e-6b43-4b7d-9325-2f3640b62006",
     professor: "1a55be6e-6b43-4b7d-9325-2f3640b62002",
     staff: "1a55be6e-6b43-4b7d-9325-2f3640b62003",
     merchant: "1a55be6e-6b43-4b7d-9325-2f3640b62004",
@@ -35,6 +38,7 @@ const USER_IDS = {
   },
   mokwon: {
     student: "2b66cf7f-5c54-4c8e-a146-2f3640b63001",
+    graduate: "2b66cf7f-5c54-4c8e-a146-2f3640b63006",
     professor: "2b66cf7f-5c54-4c8e-a146-2f3640b63002",
     staff: "2b66cf7f-5c54-4c8e-a146-2f3640b63003",
     merchant: "2b66cf7f-5c54-4c8e-a146-2f3640b63004",
@@ -42,6 +46,7 @@ const USER_IDS = {
   },
   paichai: {
     student: "3c77d080-4d65-4d9f-b257-2f3640b64001",
+    graduate: "3c77d080-4d65-4d9f-b257-2f3640b64006",
     professor: "3c77d080-4d65-4d9f-b257-2f3640b64002",
     staff: "3c77d080-4d65-4d9f-b257-2f3640b64003",
     merchant: "3c77d080-4d65-4d9f-b257-2f3640b64004",
@@ -49,6 +54,7 @@ const USER_IDS = {
   },
   woosong: {
     student: "4d88e191-3e76-4ea0-a368-2f3640b65001",
+    graduate: "4d88e191-3e76-4ea0-a368-2f3640b65006",
     professor: "4d88e191-3e76-4ea0-a368-2f3640b65002",
     staff: "4d88e191-3e76-4ea0-a368-2f3640b65003",
     merchant: "4d88e191-3e76-4ea0-a368-2f3640b65004",
@@ -57,12 +63,30 @@ const USER_IDS = {
 } as const;
 
 type SeedUserRole = "student" | "professor" | "staff" | "merchant" | "admin";
+type SeedStudentType = "undergrad" | "graduate";
 
 const USER_ROLE_BY_ID: Record<string, SeedUserRole> = Object.values(
   USER_IDS,
 ).reduce<Record<string, SeedUserRole>>((accumulator, usersByRole) => {
   for (const [role, userId] of Object.entries(usersByRole)) {
-    accumulator[userId] = role as SeedUserRole;
+    accumulator[userId] = role === "graduate" ? "student" : (role as SeedUserRole);
+  }
+  return accumulator;
+}, {});
+
+const USER_STUDENT_TYPE_BY_ID: Record<string, SeedStudentType | null> = Object.values(
+  USER_IDS,
+).reduce<Record<string, SeedStudentType | null>>((accumulator, usersByRole) => {
+  for (const [role, userId] of Object.entries(usersByRole)) {
+    if (role === "student") {
+      accumulator[userId] = "undergrad";
+      continue;
+    }
+    if (role === "graduate") {
+      accumulator[userId] = "graduate";
+      continue;
+    }
+    accumulator[userId] = null;
   }
   return accumulator;
 }, {});
@@ -139,6 +163,7 @@ const makeUser = ({
   id,
   campus_id,
   role,
+  student_type,
   display_name,
   nickname,
   trust_score,
@@ -148,6 +173,7 @@ const makeUser = ({
   id: string;
   campus_id: string;
   role: "student" | "professor" | "staff" | "merchant" | "admin";
+  student_type?: "undergrad" | "graduate" | null;
   display_name: string;
   nickname: string;
   trust_score: number;
@@ -157,6 +183,7 @@ const makeUser = ({
   id,
   campus_id,
   role,
+  student_type: role === "student" ? student_type ?? "undergrad" : null,
   display_name,
   nickname,
   trust_score,
@@ -201,6 +228,7 @@ const makePost = ({
   category,
   author_id,
   author_role_snapshot: USER_ROLE_BY_ID[author_id] ?? null,
+  author_student_type_snapshot: USER_STUDENT_TYPE_BY_ID[author_id] ?? null,
   show_affiliation_prefix: true,
   title,
   body,
@@ -260,9 +288,20 @@ const seed: MockDatabase = {
       id: USER_IDS.kaist.student,
       campus_id: CAMPUS_IDS.kaist,
       role: "student",
+      student_type: "undergrad",
       display_name: "김학생",
       nickname: "kaist-student",
       trust_score: 78,
+      is_verified_school_email: true,
+    }),
+    makeUser({
+      id: USER_IDS.kaist.graduate,
+      campus_id: CAMPUS_IDS.kaist,
+      role: "student",
+      student_type: "graduate",
+      display_name: "김대학원",
+      nickname: "kaist-grad",
+      trust_score: 79,
       is_verified_school_email: true,
     }),
     makeUser({
@@ -305,9 +344,20 @@ const seed: MockDatabase = {
       id: USER_IDS.cnu.student,
       campus_id: CAMPUS_IDS.cnu,
       role: "student",
+      student_type: "undergrad",
       display_name: "정충대학생",
       nickname: "cnu-student",
       trust_score: 76,
+      is_verified_school_email: true,
+    }),
+    makeUser({
+      id: USER_IDS.cnu.graduate,
+      campus_id: CAMPUS_IDS.cnu,
+      role: "student",
+      student_type: "graduate",
+      display_name: "정충대학원",
+      nickname: "cnu-grad",
+      trust_score: 77,
       is_verified_school_email: true,
     }),
     makeUser({
@@ -350,9 +400,20 @@ const seed: MockDatabase = {
       id: USER_IDS.hanbat.student,
       campus_id: CAMPUS_IDS.hanbat,
       role: "student",
+      student_type: "undergrad",
       display_name: "한밭학생",
       nickname: "hanbat-student",
       trust_score: 75,
+      is_verified_school_email: true,
+    }),
+    makeUser({
+      id: USER_IDS.hanbat.graduate,
+      campus_id: CAMPUS_IDS.hanbat,
+      role: "student",
+      student_type: "graduate",
+      display_name: "한밭대학원",
+      nickname: "hanbat-grad",
+      trust_score: 76,
       is_verified_school_email: true,
     }),
     makeUser({
@@ -395,9 +456,20 @@ const seed: MockDatabase = {
       id: USER_IDS.mokwon.student,
       campus_id: CAMPUS_IDS.mokwon,
       role: "student",
+      student_type: "undergrad",
       display_name: "목원학생",
       nickname: "mokwon-student",
       trust_score: 74,
+      is_verified_school_email: true,
+    }),
+    makeUser({
+      id: USER_IDS.mokwon.graduate,
+      campus_id: CAMPUS_IDS.mokwon,
+      role: "student",
+      student_type: "graduate",
+      display_name: "목원대학원",
+      nickname: "mokwon-grad",
+      trust_score: 75,
       is_verified_school_email: true,
     }),
     makeUser({
@@ -440,9 +512,20 @@ const seed: MockDatabase = {
       id: USER_IDS.paichai.student,
       campus_id: CAMPUS_IDS.paichai,
       role: "student",
+      student_type: "undergrad",
       display_name: "배재학생",
       nickname: "paichai-student",
       trust_score: 73,
+      is_verified_school_email: true,
+    }),
+    makeUser({
+      id: USER_IDS.paichai.graduate,
+      campus_id: CAMPUS_IDS.paichai,
+      role: "student",
+      student_type: "graduate",
+      display_name: "배재대학원",
+      nickname: "paichai-grad",
+      trust_score: 74,
       is_verified_school_email: true,
     }),
     makeUser({
@@ -485,9 +568,20 @@ const seed: MockDatabase = {
       id: USER_IDS.woosong.student,
       campus_id: CAMPUS_IDS.woosong,
       role: "student",
+      student_type: "undergrad",
       display_name: "우송학생",
       nickname: "woosong-student",
       trust_score: 77,
+      is_verified_school_email: true,
+    }),
+    makeUser({
+      id: USER_IDS.woosong.graduate,
+      campus_id: CAMPUS_IDS.woosong,
+      role: "student",
+      student_type: "graduate",
+      display_name: "우송대학원",
+      nickname: "woosong-grad",
+      trust_score: 78,
       is_verified_school_email: true,
     }),
     makeUser({

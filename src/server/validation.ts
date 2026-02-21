@@ -9,6 +9,7 @@ import {
   REPORT_REASONS,
   REPORT_STATUSES,
   REPORT_TARGET_TYPES,
+  STUDENT_TYPES,
   USER_ROLES,
 } from "@/src/domain/enums";
 import type {
@@ -239,10 +240,25 @@ export const parseReportStatusQuery = (
 
 export const parseMockLoginInput = (value: unknown): MockLoginInput => {
   const body = toRecord(value, "Request body");
-  ensureKnownKeys(body, ["role", "campus_id", "user_id"], "body");
+  ensureKnownKeys(body, ["role", "student_type", "campus_id", "user_id"], "body");
+
+  const role = readEnumValue(body.role, USER_ROLES, "role");
+  const studentType = readOptionalEnumValue(
+    body.student_type,
+    STUDENT_TYPES,
+    "student_type",
+  );
+
+  if (role !== "student" && studentType !== undefined) {
+    throw new AppError(
+      "BAD_REQUEST",
+      "student_type can only be provided when role is student.",
+    );
+  }
 
   return {
-    role: readEnumValue(body.role, USER_ROLES, "role"),
+    role,
+    student_type: studentType,
     campus_id: readOptionalUuidString(body.campus_id, "campus_id"),
     user_id: readOptionalUuidString(body.user_id, "user_id"),
   };

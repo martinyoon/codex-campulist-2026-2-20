@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { USER_ROLES } from "@/src/domain/enums";
+import { STUDENT_TYPES, USER_ROLES, type StudentType } from "@/src/domain/enums";
 import { useToast } from "@/app/components/toastProvider";
-import { getUserRoleLabel } from "@/src/ui/labelMap";
+import {
+  getStudentTypeLabel,
+  getUserRoleDisplayLabel,
+  getUserRoleLabel,
+} from "@/src/ui/labelMap";
 import {
   CAMPUS_OPTIONS,
   DEFAULT_CAMPUS_ID,
@@ -17,6 +21,7 @@ interface LoginResult {
   data?: {
     user_id: string;
     role: (typeof USER_ROLES)[number];
+    student_type: StudentType | null;
     campus_id: string;
   };
   error?: {
@@ -29,6 +34,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { pushToast } = useToast();
   const [role, setRole] = useState<(typeof USER_ROLES)[number]>("student");
+  const [studentType, setStudentType] = useState<StudentType>("undergrad");
   const [campusId, setCampusId] = useState<string>(DEFAULT_CAMPUS_ID);
   const [isSubmitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string>("");
@@ -44,6 +50,7 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           role,
+          student_type: role === "student" ? studentType : undefined,
           campus_id: campusId,
         }),
       });
@@ -56,9 +63,10 @@ export default function LoginPage() {
         return;
       }
 
-      const successMessage = `세션 변경 완료: ${getUserRoleLabel(result.data.role)} · ${getCampusNameById(
-        result.data.campus_id,
-      )}`;
+      const successMessage = `세션 변경 완료: ${getUserRoleDisplayLabel(
+        result.data.role,
+        result.data.student_type,
+      )} · ${getCampusNameById(result.data.campus_id)}`;
       setMessage(successMessage);
       pushToast({ kind: "success", message: successMessage });
       router.push("/");
@@ -94,6 +102,22 @@ export default function LoginPage() {
             ))}
           </select>
         </label>
+        {role === "student" ? (
+          <label>
+            <div className="note">학생 구분</div>
+            <select
+              className="select"
+              value={studentType}
+              onChange={(event) => setStudentType(event.target.value as StudentType)}
+            >
+              {STUDENT_TYPES.map((item) => (
+                <option value={item} key={item}>
+                  {getStudentTypeLabel(item)}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <label>
           <div className="note">캠퍼스</div>
           <select

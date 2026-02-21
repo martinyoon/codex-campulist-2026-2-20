@@ -4,6 +4,7 @@ import type {
   PostStatus,
   ReportReason,
   ReportStatus,
+  StudentType,
   UserRole,
 } from "@/src/domain/enums";
 
@@ -13,6 +14,11 @@ const USER_ROLE_LABELS: Record<UserRole, string> = {
   staff: "교직원",
   merchant: "인근상인",
   admin: "관리자",
+};
+
+const STUDENT_TYPE_LABELS: Record<StudentType, string> = {
+  undergrad: "학부생",
+  graduate: "대학원생",
 };
 
 const POST_CATEGORY_LABELS: Record<PostCategory, string> = {
@@ -57,6 +63,22 @@ const CHAT_THREAD_STATUS_LABELS: Record<ChatThreadStatus, string> = {
 };
 
 export const getUserRoleLabel = (value: UserRole): string => USER_ROLE_LABELS[value];
+
+export const getStudentTypeLabel = (value: StudentType): string =>
+  STUDENT_TYPE_LABELS[value];
+
+export const getUserRoleDisplayLabel = (
+  role: UserRole,
+  studentType: StudentType | null,
+): string => {
+  if (role !== "student") {
+    return getUserRoleLabel(role);
+  }
+  if (!studentType) {
+    return getUserRoleLabel(role);
+  }
+  return getStudentTypeLabel(studentType);
+};
 
 export const getPostCategoryLabel = (value: PostCategory): string =>
   POST_CATEGORY_LABELS[value];

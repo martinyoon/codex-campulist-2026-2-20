@@ -113,6 +113,7 @@ export class InMemoryPostRepository implements PostRepository {
       category: input.category,
       author_id: session.user_id,
       author_role_snapshot: session.role,
+      author_student_type_snapshot: session.student_type,
       show_affiliation_prefix: input.show_affiliation_prefix ?? true,
       title: input.title.trim(),
       body: input.body.trim(),

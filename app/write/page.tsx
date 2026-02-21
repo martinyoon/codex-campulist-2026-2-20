@@ -5,12 +5,19 @@ import { useRouter } from "next/navigation";
 import {
   POST_CATEGORIES,
   type PostCategory,
+  type StudentType,
   type UserRole,
 } from "@/src/domain/enums";
 import { getAllowedCategoriesForRole } from "@/src/domain/policies";
 import { useToast } from "@/app/components/toastProvider";
-import { getPostCategoryLabel, getUserRoleLabel } from "@/src/ui/labelMap";
-import { formatDisplayTitle } from "@/src/ui/postDisplayTitle";
+import {
+  getPostCategoryLabel,
+  getUserRoleDisplayLabel,
+} from "@/src/ui/labelMap";
+import {
+  formatAffiliationPrefix,
+  formatDisplayTitle,
+} from "@/src/ui/postDisplayTitle";
 
 interface CreatePostResponse {
   ok: boolean;
@@ -28,6 +35,7 @@ interface SessionResponse {
   data?: {
     user_id: string;
     role: UserRole;
+    student_type: StudentType | null;
     campus_id: string;
   };
   error?: {
@@ -46,6 +54,9 @@ export default function WritePage() {
   const [title, setTitle] = useState("");
   const [showAffiliationPrefix, setShowAffiliationPrefix] = useState(true);
   const [sessionRole, setSessionRole] = useState<UserRole | null>(null);
+  const [sessionStudentType, setSessionStudentType] = useState<StudentType | null>(
+    null,
+  );
   const [sessionCampusId, setSessionCampusId] = useState<string | null>(null);
   const [isSessionChecked, setSessionChecked] = useState(false);
   const [sessionErrorMessage, setSessionErrorMessage] = useState<string | null>(
@@ -64,6 +75,7 @@ export default function WritePage() {
         }
         if (!result.ok || !result.data) {
           setSessionRole(null);
+          setSessionStudentType(null);
           setSessionCampusId(null);
           setSessionErrorMessage(
             result.error?.message ?? "세션을 확인하지 못했습니다.",
@@ -71,6 +83,7 @@ export default function WritePage() {
           return;
         }
         setSessionRole(result.data.role);
+        setSessionStudentType(result.data.student_type);
         setSessionCampusId(result.data.campus_id);
         setSessionErrorMessage(null);
       } catch {
@@ -78,6 +91,7 @@ export default function WritePage() {
           return;
         }
         setSessionRole(null);
+        setSessionStudentType(null);
         setSessionCampusId(null);
         setSessionErrorMessage("세션 확인 중 오류가 발생했습니다.");
       } finally {
@@ -121,8 +135,9 @@ export default function WritePage() {
     : "";
   const blockedCategoryMessage =
     sessionRole && !isCategoryAllowed
-      ? `현재 역할(${getUserRoleLabel(
+      ? `현재 역할(${getUserRoleDisplayLabel(
           sessionRole,
+          sessionStudentType,
         )})은 ${getPostCategoryLabel(
           category,
         )} 카테고리에 글을 작성할 수 없습니다. 허용 카테고리: ${allowedCategoryText}`
@@ -131,10 +146,18 @@ export default function WritePage() {
     isSubmitting ||
     !isSessionChecked ||
     (sessionRole !== null && !isCategoryAllowed);
+  const affiliationPrefix = showAffiliationPrefix
+    ? formatAffiliationPrefix({
+        campus_id: sessionCampusId ?? "",
+        author_role_snapshot: sessionRole,
+        author_student_type_snapshot: sessionStudentType,
+      })
+    : "";
   const displayTitlePreview = formatDisplayTitle({
     title: title.trim() || "게시글 제목",
     campus_id: sessionCampusId ?? "",
     author_role_snapshot: sessionRole,
+    author_student_type_snapshot: sessionStudentType,
     show_affiliation_prefix: showAffiliationPrefix,
   });
 
@@ -269,7 +292,8 @@ export default function WritePage() {
             ) : null}
             {sessionRole && !blockedCategoryMessage ? (
               <div className="note">
-                {getUserRoleLabel(sessionRole)} 허용 카테고리: {allowedCategoryText}
+                {getUserRoleDisplayLabel(sessionRole, sessionStudentType)} 허용 카테고리:{" "}
+                {allowedCategoryText}
               </div>
             ) : null}
           </label>
@@ -288,16 +312,23 @@ export default function WritePage() {
 
         <label>
           <div className="note">제목</div>
-          <input
-            type="text"
-            name="title"
-            className="input"
-            minLength={2}
-            required
-            placeholder="게시글 제목"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-          />
+          <div className="title-compose">
+            {affiliationPrefix ? (
+              <span className="title-prefix">{affiliationPrefix}</span>
+            ) : null}
+            <input
+              type="text"
+              name="title"
+              className="input"
+              minLength={2}
+              required
+              placeholder={
+                affiliationPrefix ? "제목 내용을 입력하세요" : "게시글 제목"
+              }
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </div>
           <div className="note" style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
             <input
               type="checkbox"

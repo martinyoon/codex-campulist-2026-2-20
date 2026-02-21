@@ -8,6 +8,10 @@ export const USER_ROLES = [
 
 export type UserRole = (typeof USER_ROLES)[number];
 
+export const STUDENT_TYPES = ["undergrad", "graduate"] as const;
+
+export type StudentType = (typeof STUDENT_TYPES)[number];
+
 export const POST_CATEGORIES = [
   "market",
   "housing",
