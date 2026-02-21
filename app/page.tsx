@@ -2,6 +2,7 @@ import Link from "next/link";
 import { mockApi } from "@/src/server/mockApiSingleton";
 import { getPostCategoryLabel } from "@/src/ui/labelMap";
 import { getCampusNameById } from "@/src/ui/campuses";
+import { OwnerPostManageLink } from "@/app/components/ownerPostManageLink";
 
 const categories = [
   { slug: "market", title: "중고거래", desc: "교재, 전자기기, 생활용품 거래" },
@@ -25,6 +26,7 @@ export default async function HomePage() {
 
   const promoted = promotedResult.ok ? promotedResult.data.items : [];
   const latest = latestResult.ok ? latestResult.data.items : [];
+  const sessionUserId = sessionResult.ok ? sessionResult.data.user_id : null;
   const campusName = sessionResult.ok
     ? getCampusNameById(sessionResult.data.campus_id)
     : "캠퍼스";
@@ -65,6 +67,11 @@ export default async function HomePage() {
               <span className="chip chip-accent">상단노출</span>
               <span>조회 {post.view_count}</span>
               {post.price_krw !== null ? <span>{post.price_krw.toLocaleString()}원</span> : null}
+              <OwnerPostManageLink
+                postId={post.id}
+                authorId={post.author_id}
+                sessionUserId={sessionUserId}
+              />
             </div>
           </article>
         ))}
@@ -87,6 +94,11 @@ export default async function HomePage() {
               <span className="chip">{getPostCategoryLabel(post.category)}</span>
               <span>{new Date(post.created_at).toLocaleString("ko-KR")}</span>
               <span>조회 {post.view_count}</span>
+              <OwnerPostManageLink
+                postId={post.id}
+                authorId={post.author_id}
+                sessionUserId={sessionUserId}
+              />
             </div>
           </article>
         ))}

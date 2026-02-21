@@ -4,19 +4,25 @@ import { mockApi } from "@/src/server/mockApiSingleton";
 import { PostActions } from "./postActions";
 import { getPostCategoryLabel } from "@/src/ui/labelMap";
 import { StatusBadge } from "@/app/components/statusBadge";
+import { OwnerPostManageLink } from "@/app/components/ownerPostManageLink";
 
 interface PageProps {
   params: { id: string };
 }
 
 export default async function PostDetailPage({ params }: PageProps) {
-  const result = await mockApi.getPost(params.id);
+  const [sessionResult, result] = await Promise.all([
+    mockApi.getSession(),
+    mockApi.getPost(params.id),
+  ]);
 
   if (!result.ok || !result.data) {
     notFound();
   }
 
   const post = result.data;
+  const sessionUserId = sessionResult.ok ? sessionResult.data.user_id : null;
+  const isOwner = sessionUserId === post.author_id;
 
   return (
     <>
@@ -36,6 +42,11 @@ export default async function PostDetailPage({ params }: PageProps) {
           <StatusBadge kind="post" value={post.status} />
           {post.price_krw !== null ? <span>가격: {post.price_krw.toLocaleString()}원</span> : null}
           {post.is_promoted ? <span className="chip chip-accent">상단노출중</span> : null}
+          <OwnerPostManageLink
+            postId={post.id}
+            authorId={post.author_id}
+            sessionUserId={sessionUserId}
+          />
         </div>
         {post.tags.length > 0 ? (
           <div className="post-meta">
@@ -48,7 +59,7 @@ export default async function PostDetailPage({ params }: PageProps) {
         ) : null}
       </article>
 
-      <PostActions postId={post.id} />
+      {isOwner ? null : <PostActions postId={post.id} />}
 
       <div className="row-2" style={{ marginTop: 16 }}>
         <Link href={`/boards/${post.category}`} className="btn">

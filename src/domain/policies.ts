@@ -1,7 +1,7 @@
 import type { PostCategory, UserRole } from "./enums";
 import type { Post, SessionContext } from "./types";
 
-const CATEGORY_ACCESS_BY_ROLE: Record<UserRole, PostCategory[]> = {
+const CATEGORY_ACCESS_BY_ROLE: Record<UserRole, readonly PostCategory[]> = {
   student: ["market", "housing", "jobs"],
   professor: ["market", "housing", "jobs"],
   staff: ["market", "housing", "jobs"],
@@ -9,13 +9,17 @@ const CATEGORY_ACCESS_BY_ROLE: Record<UserRole, PostCategory[]> = {
   admin: ["market", "housing", "jobs", "store"],
 };
 
+export const getAllowedCategoriesForRole = (role: UserRole): PostCategory[] => [
+  ...CATEGORY_ACCESS_BY_ROLE[role],
+];
+
 export const isAdmin = (session: SessionContext): boolean =>
   session.role === "admin";
 
 export const canCreateInCategory = (
   session: SessionContext,
   category: PostCategory,
-): boolean => CATEGORY_ACCESS_BY_ROLE[session.role].includes(category);
+): boolean => getAllowedCategoriesForRole(session.role).includes(category);
 
 export const canReadPost = (session: SessionContext, post: Post): boolean => {
   if (isAdmin(session)) {

@@ -61,7 +61,7 @@ export default async function MyPostsPage({ searchParams }: PageProps) {
       <>
         <section className="hero">
           <h1>내 게시글 관리</h1>
-          <p>게시글 상태 변경 및 삭제(소프트 삭제)를 수행할 수 있습니다.</p>
+          <p>게시글 수정/삭제를 수행할 수 있습니다. 상태 변경은 수정 화면에서 처리됩니다.</p>
         </section>
         <ErrorState
           title="세션 정보를 확인할 수 없습니다."
@@ -78,7 +78,7 @@ export default async function MyPostsPage({ searchParams }: PageProps) {
       <>
         <section className="hero">
           <h1>내 게시글 관리</h1>
-          <p>게시글 상태 변경 및 삭제(소프트 삭제)를 수행할 수 있습니다.</p>
+          <p>게시글 수정/삭제를 수행할 수 있습니다. 상태 변경은 수정 화면에서 처리됩니다.</p>
         </section>
         <ErrorState
           title="내 게시글 목록을 불러오지 못했습니다."
@@ -103,7 +103,7 @@ export default async function MyPostsPage({ searchParams }: PageProps) {
     <>
       <section className="hero">
         <h1>내 게시글 관리</h1>
-        <p>게시글 상태 변경 및 삭제(소프트 삭제)를 수행할 수 있습니다.</p>
+        <p>게시글 수정/삭제를 수행할 수 있습니다. 상태 변경은 수정 화면에서 처리됩니다.</p>
       </section>
 
       <form className="toolbar" method="GET" style={{ marginTop: 16 }}>
@@ -160,7 +160,7 @@ export default async function MyPostsPage({ searchParams }: PageProps) {
               <span>{new Date(post.created_at).toLocaleString("ko-KR")}</span>
               {post.price_krw !== null ? <span>{post.price_krw.toLocaleString()}원</span> : null}
             </div>
-            <MyPostActions postId={post.id} currentStatus={post.status} />
+            <MyPostActions postId={post.id} />
           </article>
         ))}
 

@@ -1,15 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { POST_CATEGORIES } from "@/src/domain/enums";
+import {
+  POST_CATEGORIES,
+  type PostCategory,
+  type UserRole,
+} from "@/src/domain/enums";
+import { getAllowedCategoriesForRole } from "@/src/domain/policies";
 import { useToast } from "@/app/components/toastProvider";
-import { getPostCategoryLabel } from "@/src/ui/labelMap";
+import { getPostCategoryLabel, getUserRoleLabel } from "@/src/ui/labelMap";
 
 interface CreatePostResponse {
   ok: boolean;
   status: number;
   data?: { id: string };
+  error?: {
+    code: string;
+    message: string;
+  };
+}
+
+interface SessionResponse {
+  ok: boolean;
+  status: number;
+  data?: {
+    user_id: string;
+    role: UserRole;
+    campus_id: string;
+  };
   error?: {
     code: string;
     message: string;
@@ -22,9 +41,102 @@ export default function WritePage() {
   const [isSubmitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [isPromoted, setIsPromoted] = useState(false);
+  const [category, setCategory] = useState<PostCategory>("market");
+  const [sessionRole, setSessionRole] = useState<UserRole | null>(null);
+  const [isSessionChecked, setSessionChecked] = useState(false);
+  const [sessionErrorMessage, setSessionErrorMessage] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchSession = async () => {
+      try {
+        const response = await fetch("/api/session", { cache: "no-store" });
+        const result = (await response.json()) as SessionResponse;
+        if (!mounted) {
+          return;
+        }
+        if (!result.ok || !result.data) {
+          setSessionRole(null);
+          setSessionErrorMessage(
+            result.error?.message ?? "세션을 확인하지 못했습니다.",
+          );
+          return;
+        }
+        setSessionRole(result.data.role);
+        setSessionErrorMessage(null);
+      } catch {
+        if (!mounted) {
+          return;
+        }
+        setSessionRole(null);
+        setSessionErrorMessage("세션 확인 중 오류가 발생했습니다.");
+      } finally {
+        if (mounted) {
+          setSessionChecked(true);
+        }
+      }
+    };
+
+    void fetchSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const allowedCategories = useMemo(() => {
+    if (!sessionRole) {
+      return POST_CATEGORIES;
+    }
+    return getAllowedCategoriesForRole(sessionRole);
+  }, [sessionRole]);
+
+  useEffect(() => {
+    if (!sessionRole) {
+      return;
+    }
+    if (allowedCategories.includes(category)) {
+      return;
+    }
+    if (allowedCategories.length > 0) {
+      setCategory(allowedCategories[0]);
+    }
+  }, [sessionRole, category, allowedCategories]);
+
+  const isCategoryAllowed = allowedCategories.includes(category);
+  const allowedCategoryText = sessionRole
+    ? getAllowedCategoriesForRole(sessionRole)
+        .map((item) => getPostCategoryLabel(item))
+        .join(", ")
+    : "";
+  const blockedCategoryMessage =
+    sessionRole && !isCategoryAllowed
+      ? `현재 역할(${getUserRoleLabel(
+          sessionRole,
+        )})은 ${getPostCategoryLabel(
+          category,
+        )} 카테고리에 글을 작성할 수 없습니다. 허용 카테고리: ${allowedCategoryText}`
+      : "";
+  const isSubmitBlocked =
+    isSubmitting ||
+    !isSessionChecked ||
+    (sessionRole !== null && !isCategoryAllowed);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!isSessionChecked) {
+      return;
+    }
+
+    if (sessionRole && !isCategoryAllowed) {
+      setMessage(blockedCategoryMessage);
+      pushToast({ kind: "error", message: blockedCategoryMessage });
+      return;
+    }
+
     setSubmitting(true);
     setMessage("");
 
@@ -55,7 +167,7 @@ export default function WritePage() {
     }
 
     const payload = {
-      category: String(formData.get("category")),
+      category,
       title: String(formData.get("title")),
       body: String(formData.get("body")),
       price_krw: priceRaw ? Number(priceRaw) : null,
@@ -108,13 +220,44 @@ export default function WritePage() {
         <div className="row-2">
           <label>
             <div className="note">카테고리</div>
-            <select name="category" className="select" defaultValue="market">
-              {POST_CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {getPostCategoryLabel(category)}
+            <select
+              name="category"
+              className="select"
+              value={category}
+              onChange={(event) =>
+                setCategory(event.target.value as PostCategory)
+              }
+            >
+              {POST_CATEGORIES.map((item) => (
+                <option key={item} value={item}>
+                  {getPostCategoryLabel(item)}
+                  {sessionRole && !allowedCategories.includes(item)
+                    ? " (작성 불가)"
+                    : ""}
                 </option>
               ))}
             </select>
+            {!isSessionChecked ? (
+              <div className="note">권한 정책 확인 중...</div>
+            ) : null}
+            {sessionErrorMessage ? (
+              <div className="note">
+                권한 확인 실패: {sessionErrorMessage} (서버에서 최종 검증됩니다)
+              </div>
+            ) : null}
+            {blockedCategoryMessage ? (
+              <div
+                className="chip status-warning status-badge"
+                style={{ marginTop: 8 }}
+              >
+                {blockedCategoryMessage}
+              </div>
+            ) : null}
+            {sessionRole && !blockedCategoryMessage ? (
+              <div className="note">
+                {getUserRoleLabel(sessionRole)} 허용 카테고리: {allowedCategoryText}
+              </div>
+            ) : null}
           </label>
           <label>
             <div className="note">가격 (선택)</div>
@@ -195,8 +338,12 @@ export default function WritePage() {
           </label>
         </div>
 
-        <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "작성 중..." : "게시글 등록"}
+        <button className="btn btn-primary" type="submit" disabled={isSubmitBlocked}>
+          {!isSessionChecked
+            ? "권한 확인 중..."
+            : isSubmitting
+            ? "작성 중..."
+            : "게시글 등록"}
         </button>
         {message ? <div className="note">{message}</div> : null}
       </form>

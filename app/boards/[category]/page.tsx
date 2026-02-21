@@ -5,6 +5,7 @@ import type { PostSortOption } from "@/src/domain/enums";
 import { mockApi } from "@/src/server/mockApiSingleton";
 import { EmptyState, ErrorState } from "@/app/stateBlocks";
 import { StatusBadge } from "@/app/components/statusBadge";
+import { OwnerPostManageLink } from "@/app/components/ownerPostManageLink";
 
 const categoryTitle: Record<string, string> = {
   market: "중고거래",
@@ -36,13 +37,16 @@ export default async function BoardPage({ params, searchParams }: PageProps) {
   const limit = 12;
   const offset = (page - 1) * limit;
 
-  const result = await mockApi.listPosts({
-    category: params.category as (typeof POST_CATEGORIES)[number],
-    search: searchParams.q,
-    sort,
-    limit,
-    offset,
-  });
+  const [sessionResult, result] = await Promise.all([
+    mockApi.getSession(),
+    mockApi.listPosts({
+      category: params.category as (typeof POST_CATEGORIES)[number],
+      search: searchParams.q,
+      sort,
+      limit,
+      offset,
+    }),
+  ]);
   if (!result.ok) {
     return (
       <>
@@ -92,6 +96,7 @@ export default async function BoardPage({ params, searchParams }: PageProps) {
   const list = result.data.items;
   const total = result.data.total;
   const hasMore = result.data.has_more;
+  const sessionUserId = sessionResult.ok ? sessionResult.data.user_id : null;
 
   return (
     <>
@@ -141,6 +146,11 @@ export default async function BoardPage({ params, searchParams }: PageProps) {
               <span>{new Date(post.created_at).toLocaleString("ko-KR")}</span>
               {post.price_krw !== null ? <span>{post.price_krw.toLocaleString()}원</span> : null}
               <span>조회 {post.view_count}</span>
+              <OwnerPostManageLink
+                postId={post.id}
+                authorId={post.author_id}
+                sessionUserId={sessionUserId}
+              />
             </div>
           </article>
         ))}

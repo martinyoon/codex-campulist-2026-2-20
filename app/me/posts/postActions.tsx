@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/app/components/confirmModal";
 import { useToast } from "@/app/components/toastProvider";
-import { getPostStatusLabel } from "@/src/ui/labelMap";
 
 interface ApiResponse<T> {
   ok: boolean;
@@ -17,48 +17,16 @@ interface ApiResponse<T> {
   };
 }
 
-const STATUS_OPTIONS = ["active", "reserved", "closed"] as const;
-
 export function MyPostActions({
   postId,
-  currentStatus,
 }: {
   postId: string;
-  currentStatus: string;
 }) {
   const router = useRouter();
   const { pushToast } = useToast();
-  const [status, setStatus] = useState(currentStatus);
-  const [busy, setBusy] = useState<"status" | "delete" | null>(null);
+  const [busy, setBusy] = useState<"delete" | null>(null);
   const [message, setMessage] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-
-  const updateStatus = async () => {
-    setBusy("status");
-    setMessage("");
-    try {
-      const response = await fetch(`/api/posts/${postId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      const result = (await response.json()) as ApiResponse<{ status: string }>;
-      if (!result.ok) {
-        const errorMessage = result.error?.message ?? "상태 변경 실패";
-        setMessage(errorMessage);
-        pushToast({ kind: "error", message: errorMessage });
-        return;
-      }
-      setMessage("상태가 변경되었습니다.");
-      pushToast({ kind: "success", message: "게시글 상태를 변경했습니다." });
-      router.refresh();
-    } catch {
-      setMessage("요청 처리 중 오류가 발생했습니다.");
-      pushToast({ kind: "error", message: "요청 처리 중 오류가 발생했습니다." });
-    } finally {
-      setBusy(null);
-    }
-  };
 
   const softDelete = async () => {
     setBusy("delete");
@@ -86,36 +54,20 @@ export function MyPostActions({
 
   return (
     <div className="form-grid" style={{ marginTop: 10 }}>
+      <div className="note">상태 변경은 수정 화면에서 처리합니다.</div>
       <div className="row-2">
-        <select
-          className="select"
-          value={status}
-          onChange={(event) => setStatus(event.target.value)}
-          disabled={busy !== null}
-        >
-          {STATUS_OPTIONS.map((item) => (
-            <option key={item} value={item}>
-              {getPostStatusLabel(item)}
-            </option>
-          ))}
-        </select>
+        <Link className="btn" href={`/me/posts/${postId}/edit`}>
+          수정
+        </Link>
         <button
-          className="btn"
+          className="btn btn-danger"
           type="button"
-          onClick={updateStatus}
+          onClick={() => setDeleteModalOpen(true)}
           disabled={busy !== null}
         >
-          상태 변경
+          삭제 처리
         </button>
       </div>
-      <button
-        className="btn btn-danger"
-        type="button"
-        onClick={() => setDeleteModalOpen(true)}
-        disabled={busy !== null}
-      >
-        삭제 처리
-      </button>
       {message ? <div className="note">{message}</div> : null}
 
       <ConfirmModal

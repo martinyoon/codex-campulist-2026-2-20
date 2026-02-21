@@ -30,6 +30,12 @@ const POST_STATUS_LABELS: Record<PostStatus, string> = {
   hidden: "숨김",
 };
 
+const POST_STATUS_DESCRIPTIONS: Partial<Record<PostStatus, string>> = {
+  active: "글이 공개되어 있고, 거래/문의(채팅)를 받는 상태",
+  reserved: "거래 상대가 잠정 확정되어, 다른 문의를 사실상 멈춘 상태",
+  closed: "거래/모집이 끝나서 더 이상 진행하지 않는 종료 상태",
+};
+
 const REPORT_REASON_LABELS: Record<ReportReason, string> = {
   spam: "스팸/도배",
   fraud: "사기 의심",
@@ -57,6 +63,9 @@ export const getPostCategoryLabel = (value: PostCategory): string =>
 
 export const getPostStatusLabel = (value: PostStatus): string =>
   POST_STATUS_LABELS[value];
+
+export const getPostStatusDescription = (value: PostStatus): string =>
+  POST_STATUS_DESCRIPTIONS[value] ?? "게시글 진행 상태";
 
 export const getReportReasonLabel = (value: ReportReason): string =>
   REPORT_REASON_LABELS[value];
